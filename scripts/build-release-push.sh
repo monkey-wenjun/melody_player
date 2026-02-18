@@ -92,15 +92,16 @@ update_version() {
 
 # 修改版本号文件
 bump_version() {
-    log_step "1" "更新版本号"
+    # 日志输出到 stderr，避免污染返回值
+    log_step "1" "更新版本号" >&2
     
     local current_version=$(get_version)
     local current_build=$(get_build_number)
     local new_version=$(update_version "$current_version")
     local new_build=$((current_build + 1))
     
-    log_info "当前版本: $current_version+$current_build"
-    log_info "新版本: $new_version+$new_build"
+    log_info "当前版本: $current_version+$current_build" >&2
+    log_info "新版本: $new_version+$new_build" >&2
     
     # 更新 constants.dart
     sed -i "s/appVersion = '$current_version'/appVersion = '$new_version'/g" "$PROJECT_DIR/$CONSTANTS_FILE"
@@ -108,9 +109,9 @@ bump_version() {
     # 更新 pubspec.yaml
     sed -i "s/^version: $current_version+$current_build/version: $new_version+$new_build/g" "$PROJECT_DIR/$PUBSPEC_FILE"
     
-    log_success "版本号已更新: $current_version -> $new_version"
+    log_success "版本号已更新: $current_version -> $new_version" >&2
     
-    # 返回新版本号
+    # 返回新版本号（只输出到 stdout）
     echo "$new_version"
 }
 
