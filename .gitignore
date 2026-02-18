@@ -41,3 +41,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android local properties (contains local SDK paths)
+/android/local.properties
+
+# Internal deployment scripts (contains OSS config)
+/scripts/build-release-push.sh
