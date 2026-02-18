@@ -15,6 +15,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   // 循环模式
   LoopMode _loopMode = LoopMode.off;
   bool _shuffleMode = false;
+  
+  // 自定义当前索引流，因为 just_audio 的 currentIndexStream 不适用于我们手动管理的播放列表
+  final _currentIndexController = StreamController<int>.broadcast();
 
   MyAudioHandler() {
     _init();
@@ -26,13 +29,8 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       _updatePlaybackState();
     });
 
-    // 监听当前歌曲变化
-    _player.currentIndexStream.listen((index) {
-      if (index != null && index >= 0 && index < _songs.length) {
-        _currentIndex = index;
-        _updateMediaItem();
-      }
-    });
+    // 监听当前歌曲变化（仅用于 ConcatenatingAudioSource，我们手动管理播放列表）
+    // _player.currentIndexStream 不适用于单个 AudioSource.uri 切换方式
 
     // 监听处理完成
     _player.playerStateStream.listen((state) {
@@ -111,6 +109,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
           : null,
     )).toList());
 
+    _currentIndexController.add(_currentIndex);
     await _playCurrentSong();
   }
 
@@ -158,38 +157,56 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() async {
+    if (_songs.isEmpty) return;
+    
     if (_shuffleMode) {
       _currentIndex = DateTime.now().millisecond % _songs.length;
     } else {
-      _currentIndex++;
-      if (_currentIndex >= _songs.length) {
+      final nextIndex = _currentIndex + 1;
+      if (nextIndex >= _songs.length) {
         if (_loopMode == LoopMode.all) {
           _currentIndex = 0;
         } else {
-          _currentIndex = _songs.length - 1;
+          // 非循环模式下已到最后一首，不执行操作
           return;
         }
+      } else {
+        _currentIndex = nextIndex;
       }
     }
+    _currentIndexController.add(_currentIndex);
     await _playCurrentSong();
   }
 
   @override
   Future<void> skipToPrevious() async {
-    if (_player.position > const Duration(seconds: 3)) {
+    if (_songs.isEmpty) return;
+    
+    // 如果当前播放超过3秒且不是第一首，先跳到开头
+    // 但如果是第一首或循环模式，则切换到上一首/最后一首
+    if (_player.position > const Duration(seconds: 3) && _currentIndex > 0) {
       await _player.seek(Duration.zero);
+      return;
+    }
+    
+    if (_shuffleMode) {
+      _currentIndex = DateTime.now().millisecond % _songs.length;
     } else {
-      _currentIndex--;
-      if (_currentIndex < 0) {
+      final prevIndex = _currentIndex - 1;
+      if (prevIndex < 0) {
         if (_loopMode == LoopMode.all) {
           _currentIndex = _songs.length - 1;
         } else {
-          _currentIndex = 0;
+          // 非循环模式下已在第一首，跳到开头
+          await _player.seek(Duration.zero);
           return;
         }
+      } else {
+        _currentIndex = prevIndex;
       }
-      await _playCurrentSong();
     }
+    _currentIndexController.add(_currentIndex);
+    await _playCurrentSong();
   }
 
   @override
@@ -274,5 +291,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   Stream<PlayerState> get playerStateStream => _player.playerStateStream;
   Stream<Duration> get positionStream => _player.positionStream;
   Stream<Duration?> get durationStream => _player.durationStream;
-  Stream<int?> get currentIndexStream => _player.currentIndexStream;
+  Stream<int?> get currentIndexStream => _currentIndexController.stream;
+  
+  void dispose() {
+    _currentIndexController.close();
+  }
 }
