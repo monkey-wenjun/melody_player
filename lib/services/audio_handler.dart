@@ -81,7 +81,8 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     final mediaItem = MediaItem(
       id: song.id,
       title: song.title,
-      artist: song.artist,
+      displayTitle: song.title,
+      artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
       album: song.album,
       duration: Duration(milliseconds: song.duration),
       artUri: song.albumId != null 
@@ -101,7 +102,8 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     queue.add(_songs.map((song) => MediaItem(
       id: song.id,
       title: song.title,
-      artist: song.artist,
+      displayTitle: song.title,
+      artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
       album: song.album,
       duration: Duration(milliseconds: song.duration),
       artUri: song.albumId != null 
