@@ -1,0 +1,66 @@
+name: melody_player
+description: "A beautiful and lightweight music player for Android"
+publish_to: 'none'
+version: 1.9.0+26
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  
+  # 音频播放核心
+  just_audio: ^0.9.36
+  just_audio_background: ^0.0.1-beta.10
+  audio_service: ^0.18.13
+  audio_session: ^0.1.18
+  
+  # Content URI 支持
+  android_content_provider: ^0.4.2
+  
+  # 本地音乐扫描
+  on_audio_query: ^2.9.0
+  
+  # 权限处理
+  permission_handler: ^11.3.0
+  
+  # 状态管理
+  provider: ^6.1.1
+  
+  # UI 组件
+  audio_video_progress_bar: ^2.0.3
+  sliding_up_panel: ^2.0.0+1
+  flutter_slidable: ^3.1.0
+  
+  # 图片缓存
+  cached_network_image: ^3.3.1
+  
+  # 本地存储
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  
+  # 工具
+  get_it: ^7.6.4
+  equatable: ^2.0.5
+  share_plus: ^10.0.0
+  
+  # WMA 转码支持
+  ffmpeg_kit_flutter_audio: ^6.0.3
+  
+  # APK 安装支持
+  open_filex: ^4.6.0
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
