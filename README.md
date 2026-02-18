@@ -61,7 +61,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.0) | [点击下载](https://file.awen.me/music/melody_player_v1.9.0.apk) | ~125 MB |
+| 最新版 (v1.9.1) | [点击下载](https://file.awen.me/music/melody_player_v1.9.1.apk) | ~125 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
