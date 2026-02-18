@@ -1,7 +1,7 @@
 name: melody_player
 description: "A beautiful and lightweight music player for Android"
 publish_to: 'none'
-version: 1.9.6+32
+version: 1.9.7+33
 
 environment:
   sdk: ^3.5.4
@@ -47,9 +47,6 @@ dependencies:
   get_it: ^7.6.4
   equatable: ^2.0.5
   share_plus: ^10.0.0
-  
-  # WMA 转码支持
-  ffmpeg_kit_flutter_audio: ^6.0.3
   
   # APK 安装支持
   open_filex: ^4.6.0

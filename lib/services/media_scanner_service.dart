@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:ffmpeg_kit_flutter_audio/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_audio/media_information.dart';
+
 import '../models/song.dart';
 import '../models/album.dart';
 import '../models/artist.dart';
@@ -467,25 +466,11 @@ class MediaScannerService {
     return false;
   }
 
-  /// 获取音频文件时长（用于 WMA 等无法通过 on_audio_query 获取时长的格式）
+  /// 获取音频文件时长（WMA 等特殊格式）
+  /// 由于 FFmpegKit 已退役，暂不支持获取 WMA 时长，返回 0
   Future<int> _getAudioDuration(String filePath) async {
-    try {
-      final mediaInfo = await FFprobeKit.getMediaInformation(filePath);
-      final information = mediaInfo.getMediaInformation();
-      
-      if (information != null) {
-        final durationStr = information.getDuration();
-        if (durationStr != null) {
-          // 时长以秒为单位返回，转换为毫秒
-          final durationSec = double.tryParse(durationStr);
-          if (durationSec != null) {
-            return (durationSec * 1000).round();
-          }
-        }
-      }
-    } catch (e) {
-      print('Get duration error for $filePath: $e');
-    }
+    // FFmpegKit 已退役，相关功能已移除
+    // 返回 0 表示未知时长
     return 0;
   }
 }
