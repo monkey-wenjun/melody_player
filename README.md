@@ -234,7 +234,8 @@ build/app/outputs/flutter-apk/app-release.apk
 
 如有问题或建议，欢迎通过以下方式联系：
 
-- 📧 邮箱: your.email@example.com
+- 📧 邮箱: hi@awen.me
+- 🌐 博客: [https://www.awen.me](https://www.awen.me)
 - 🐛 Issues: [GitHub Issues](https://github.com/yourusername/melody_player/issues)
 
 ---
