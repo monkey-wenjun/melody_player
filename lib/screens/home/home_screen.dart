@@ -11,6 +11,7 @@ import '../library/library_screen.dart';
 import '../player/player_screen.dart';
 import '../playlist/playlists_screen.dart';
 import '../settings/settings_screen.dart';
+import 'quick_access_songs_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -201,10 +202,46 @@ class _HomeTabState extends State<HomeTab> {
 
   Widget _buildQuickAccess(BuildContext context) {
     final items = [
-      _QuickAccessItem(Icons.favorite, '我喜欢的', Colors.red, () {}),
-      _QuickAccessItem(Icons.add_box, '最近添加', Colors.blue, () {}),
-      _QuickAccessItem(Icons.trending_up, '最多播放', Colors.orange, () {}),
-      _QuickAccessItem(Icons.history, '播放历史', Colors.green, () {}),
+      _QuickAccessItem(Icons.favorite, '我喜欢的', Colors.red, () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const QuickAccessSongsScreen(
+              type: QuickAccessType.favorites,
+            ),
+          ),
+        );
+      }),
+      _QuickAccessItem(Icons.add_box, '最近添加', Colors.blue, () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const QuickAccessSongsScreen(
+              type: QuickAccessType.recentlyAdded,
+            ),
+          ),
+        );
+      }),
+      _QuickAccessItem(Icons.trending_up, '最多播放', Colors.orange, () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const QuickAccessSongsScreen(
+              type: QuickAccessType.mostPlayed,
+            ),
+          ),
+        );
+      }),
+      _QuickAccessItem(Icons.history, '播放历史', Colors.green, () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const QuickAccessSongsScreen(
+              type: QuickAccessType.playHistory,
+            ),
+          ),
+        );
+      }),
     ];
 
     return Row(

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# 悦音播放器编译上传脚本（仅上传OSS，不调用接口）
+# 悦音播放器编译发布脚本
+# 功能：自动更新版本号 -> git commit push -> 编译 -> 上传 OSS
 # 使用方法:
 #   ./scripts/build-release-push.sh [提交信息]
 #
@@ -24,6 +25,7 @@ APP_NAME="悦音播放器"
 APP_NAME_EN="melody_player"
 APK_OUTPUT_DIR="build/app/outputs/flutter-apk"
 CONSTANTS_FILE="lib/utils/constants.dart"
+PUBSPEC_FILE="pubspec.yaml"
 
 # OSS 配置
 CONFIG_FILE="$HOME/my_blog/_config.yml"
@@ -67,6 +69,80 @@ get_version() {
     grep "appVersion = " "$PROJECT_DIR/$CONSTANTS_FILE" | cut -d"'" -f2
 }
 
+# 获取当前 build number
+get_build_number() {
+    grep "^version: " "$PROJECT_DIR/$PUBSPEC_FILE" | cut -d'+' -f2
+}
+
+# 更新版本号（小版本号+1）
+update_version() {
+    local current_version=$1
+    
+    # 解析版本号 1.9.1 -> major=1, minor=9, patch=1
+    local major=$(echo "$current_version" | cut -d'.' -f1)
+    local minor=$(echo "$current_version" | cut -d'.' -f2)
+    local patch=$(echo "$current_version" | cut -d'.' -f3)
+    
+    # patch + 1
+    local new_patch=$((patch + 1))
+    local new_version="${major}.${minor}.${new_patch}"
+    
+    echo "$new_version"
+}
+
+# 修改版本号文件
+bump_version() {
+    log_step "1" "更新版本号"
+    
+    local current_version=$(get_version)
+    local current_build=$(get_build_number)
+    local new_version=$(update_version "$current_version")
+    local new_build=$((current_build + 1))
+    
+    log_info "当前版本: $current_version+$current_build"
+    log_info "新版本: $new_version+$new_build"
+    
+    # 更新 constants.dart
+    sed -i "s/appVersion = '$current_version'/appVersion = '$new_version'/g" "$PROJECT_DIR/$CONSTANTS_FILE"
+    
+    # 更新 pubspec.yaml
+    sed -i "s/^version: $current_version+$current_build/version: $new_version+$new_build/g" "$PROJECT_DIR/$PUBSPEC_FILE"
+    
+    log_success "版本号已更新: $current_version -> $new_version"
+    
+    # 返回新版本号
+    echo "$new_version"
+}
+
+# Git 提交并推送
+git_commit_push() {
+    local version=$1
+    local commit_msg=$2
+    
+    log_step "2" "Git 提交并推送"
+    
+    cd "$PROJECT_DIR"
+    
+    # 检查是否有变更
+    if [ -z "$(git status --porcelain)" ]; then
+        log_warn "没有需要提交的变更"
+        return 0
+    fi
+    
+    # 添加所有变更
+    git add -A
+    log_info "已添加变更到暂存区"
+    
+    # 提交
+    local full_msg="v$version: $commit_msg"
+    git commit -m "$full_msg"
+    log_success "已提交: $full_msg"
+    
+    # 推送
+    git push
+    log_success "已推送到远程仓库"
+}
+
 # 设置环境
 setup_environment() {
     log_info "设置编译环境..."
@@ -93,7 +169,7 @@ setup_environment() {
 
 # 编译 APK
 build_apk() {
-    log_step "1" "编译 Release APK"
+    log_step "3" "编译 Release APK"
     
     cd "$PROJECT_DIR"
     
@@ -131,7 +207,7 @@ upload_to_oss() {
     local file=$1
     local version_name=$2
     
-    log_step "2" "上传到阿里云 OSS"
+    log_step "4" "上传到阿里云 OSS"
     
     local filename=$(basename "$file")
     local remote_path="$OSS_DIR/$filename"
@@ -167,14 +243,16 @@ show_release_info() {
     local apk_file=$1
     local version_name=$2
     local remote_filename=$3
+    local commit_msg=$4
     
     echo ""
     echo "========================================"
-    echo "     $APP_NAME 编译上传完成!"
+    echo "     $APP_NAME 发布完成!"
     echo "========================================"
     echo ""
     echo -e "${CYAN}版本信息:${NC}"
     echo "  版本名: $version_name"
+    echo "  提交信息: $commit_msg"
     echo ""
     echo -e "${CYAN}APK 信息:${NC}"
     echo "  文件: $(basename "$apk_file")"
@@ -189,13 +267,16 @@ show_release_info() {
 # 主函数
 main() {
     echo "========================================"
-    echo "  $APP_NAME 编译上传脚本"
+    echo "  $APP_NAME 编译发布脚本"
     echo "========================================"
     echo ""
     
-    # 获取版本
-    VERSION_NAME=$(get_version)
-    log_info "当前版本: $VERSION_NAME"
+    # 获取提交信息
+    COMMIT_MSG="${1:-更新版本}"
+    
+    # 获取当前版本
+    CURRENT_VERSION=$(get_version)
+    log_info "当前版本: $CURRENT_VERSION"
     
     # 加载配置
     load_config
@@ -207,20 +288,26 @@ main() {
     cd "$PROJECT_DIR"
     log_info "工作目录: $(pwd)"
     
-    # 步骤1: 编译
+    # 步骤1: 更新版本号
+    NEW_VERSION=$(bump_version)
+    
+    # 步骤2: Git 提交并推送
+    git_commit_push "$NEW_VERSION" "$COMMIT_MSG"
+    
+    # 步骤3: 编译
     build_apk
     
-    # 步骤2: 准备 APK
-    RELEASE_APK=$(prepare_apk "$VERSION_NAME")
+    # 步骤4: 准备 APK
+    RELEASE_APK=$(prepare_apk "$NEW_VERSION")
     REMOTE_FILENAME=$(basename "$RELEASE_APK")
     
-    # 步骤3: 上传
-    upload_to_oss "$RELEASE_APK" "$VERSION_NAME"
+    # 步骤5: 上传
+    upload_to_oss "$RELEASE_APK" "$NEW_VERSION"
     
     # 显示发布信息
-    show_release_info "$RELEASE_APK" "$VERSION_NAME" "$REMOTE_FILENAME"
+    show_release_info "$RELEASE_APK" "$NEW_VERSION" "$REMOTE_FILENAME" "$COMMIT_MSG"
     
-    log_success "上传完成！"
+    log_success "发布完成！"
 }
 
 # 执行主函数

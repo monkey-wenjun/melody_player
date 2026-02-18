@@ -110,4 +110,14 @@ class PlaylistProvider extends ChangeNotifier {
     await _service.clearRecent();
     await loadRecentSongs();
   }
+
+  // 获取最多播放的歌曲
+  Future<List<Song>> getMostPlayedSongs(List<Song> allSongs, {int limit = 50}) async {
+    return await _service.getMostPlayedSongs(allSongs, limit: limit);
+  }
+
+  // 记录播放次数
+  Future<void> recordPlayCount(String songId) async {
+    await _service.incrementPlayCount(songId);
+  }
 }

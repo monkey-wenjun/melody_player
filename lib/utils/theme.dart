@@ -8,17 +8,17 @@ class AppColors {
   static const Color secondary = Color(0xFFA8D8B9);
   static const Color accent = Color(0xFFFF6B6B);
   static const Color backgroundLight = Color(0xFFFAFAFA);
-  static const Color backgroundDark = Color(0xFF1A1A2E);
+  static const Color backgroundDark = Color(0xFF121212);
   static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceDark = Color(0xFF252544);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
   static const Color textPrimaryLight = Color(0xFF2D3436);
   static const Color textSecondaryLight = Color(0xFF636E72);
   static const Color textTertiaryLight = Color(0xFFB2BEC3);
   static const Color textPrimaryDark = Color(0xFFE8E8E8);
-  static const Color textSecondaryDark = Color(0xFFA0A0B0);
-  static const Color textTertiaryDark = Color(0xFF6E6E80);
+  static const Color textSecondaryDark = Color(0xFFAAAAAA);
+  static const Color textTertiaryDark = Color(0xFF666666);
   static const Color dividerLight = Color(0xFFE8E8E8);
-  static const Color dividerDark = Color(0xFF3A3A5A);
+  static const Color dividerDark = Color(0xFF2C2C2C);
 }
 
 class AppThemeData {

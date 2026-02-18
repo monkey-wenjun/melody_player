@@ -12,6 +12,7 @@ class PlaylistService {
   static const String _playlistsKey = 'playlists';
   static const String _favoritesKey = 'favorites';
   static const String _recentKey = 'recent_songs';
+  static const String _playCountsKey = 'play_counts';
   
   final _uuid = const Uuid();
   SharedPreferences? _prefs;
@@ -170,6 +171,57 @@ class PlaylistService {
 
   Future<void> clearRecent() async {
     await _prefs?.remove(_recentKey);
+  }
+
+  // 播放次数统计
+  Future<Map<String, int>> getPlayCounts() async {
+    final jsonString = _prefs?.getString(_playCountsKey);
+    if (jsonString == null) return {};
+
+    try {
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      return jsonMap.map((key, value) => MapEntry(key, value as int));
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Future<void> incrementPlayCount(String songId) async {
+    final counts = await getPlayCounts();
+    counts[songId] = (counts[songId] ?? 0) + 1;
+    await _savePlayCounts(counts);
+  }
+
+  Future<List<Song>> getMostPlayedSongs(List<Song> allSongs, {int limit = 50}) async {
+    final counts = await getPlayCounts();
+    
+    // 按播放次数排序
+    final sortedIds = counts.entries
+        .where((e) => e.value > 0)
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    
+    // 构建歌曲列表
+    final result = <Song>[];
+    for (final entry in sortedIds.take(limit)) {
+      final song = allSongs.firstWhere(
+        (s) => s.id == entry.key,
+        orElse: () => null as Song,
+      );
+      if (song != null) {
+        result.add(song);
+      }
+    }
+    
+    return result;
+  }
+
+  Future<void> clearPlayCounts() async {
+    await _prefs?.remove(_playCountsKey);
+  }
+
+  Future<void> _savePlayCounts(Map<String, int> counts) async {
+    await _prefs?.setString(_playCountsKey, jsonEncode(counts));
   }
 
   // 私有方法

@@ -120,6 +120,8 @@ class PlayerProvider extends ChangeNotifier {
 
   void _addToRecent(Song song) {
     _playlistProvider?.addToRecent(song);
+    // 记录播放次数
+    _playlistProvider?.recordPlayCount(song.id);
   }
 
   void clearError() {
