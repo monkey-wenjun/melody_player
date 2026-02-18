@@ -1,7 +1,7 @@
 # 🎵 悦音播放器 (Melody Player)
 
 <p align="center">
-  <img src="assets/images/default_album_art.png" alt="悦音播放器 Logo" width="120">
+  <img src="https://file.awen.me/20260218203253397.png" alt="悦音播放器 Logo" width="120">
 </p>
 
 <p align="center">
