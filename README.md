@@ -42,6 +42,20 @@
 
 ---
 
+## 📸 界面预览
+
+<p align="center">
+  <img src="https://file.awen.me/20260218203625125.jpg" alt="首页界面" width="45%">
+  &nbsp;&nbsp;
+  <img src="https://file.awen.me/20260218203655563.jpg" alt="播放界面" width="45%">
+</p>
+
+<p align="center">
+  <em>左：首页界面 &nbsp;|&nbsp; 右：播放界面</em>
+</p>
+
+---
+
 ## 📥 下载安装
 
 ### 直接下载
