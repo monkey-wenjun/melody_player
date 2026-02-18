@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/playlist_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../widgets/common/song_list_item.dart';
+import '../../widgets/common/add_to_playlist_dialog.dart';
 
 class PlaylistsScreen extends StatelessWidget {
   const PlaylistsScreen({Key? key}) : super(key: key);
@@ -245,7 +246,20 @@ class PlaylistsScreen extends StatelessWidget {
                         initialIndex: index,
                       );
                     },
-                    onToggleFavorite: () => provider.toggleFavorite(song),
+                    onToggleFavorite: () async {
+                      await provider.toggleFavorite(song);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('已取消收藏'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      }
+                    },
+                    onAddToPlaylist: () {
+                      showAddToPlaylistDialog(context, song);
+                    },
                   );
                 },
               );

@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import '../../models/song.dart';
 import '../../providers/library_provider.dart';
 import '../../providers/player_provider.dart';
+import '../../providers/playlist_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../widgets/common/song_list_item.dart';
+import '../../widgets/common/add_to_playlist_dialog.dart';
+import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/common/album_art.dart';
 import '../folder_picker/folder_picker_screen.dart';
 
@@ -361,6 +364,7 @@ class _SongsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
+    final playlistProvider = context.watch<PlaylistProvider>();
 
     if (songs.isEmpty) {
       return const Center(
@@ -388,6 +392,31 @@ class _SongsTab extends StatelessWidget {
           isPlaying: isPlaying,
           onTap: () {
             player.setPlaylist(songs, initialIndex: index);
+          },
+          onToggleFavorite: () async {
+            await playlistProvider.toggleFavorite(song);
+            final isFav = playlistProvider.favorites.any((s) => s.id == song.id);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isFav ? '已添加到收藏' : '已取消收藏'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
+          },
+          onAddToPlaylist: () {
+            showAddToPlaylistDialog(context, song);
+          },
+          onPlayNext: () {
+            // 添加到播放队列的下一首
+            // TODO: 实现添加到播放队列功能
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('已添加到下一首播放'),
+                duration: Duration(seconds: 1),
+              ),
+            );
           },
         );
       },

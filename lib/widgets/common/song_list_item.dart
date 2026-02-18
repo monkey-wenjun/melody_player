@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import '../../models/song.dart';
+import '../../providers/playlist_provider.dart';
 import 'album_art.dart';
+import 'add_to_playlist_dialog.dart';
+import 'song_info_dialog.dart';
 
 /// 检查音频格式是否支持
 bool _isFormatSupported(String extension) {
@@ -67,40 +71,7 @@ class SongListItem extends StatelessWidget {
               : theme.textTheme.bodyMedium?.color,
         ),
       ),
-      trailing: trailing ?? Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 格式标签（不支持的格式）
-          if (!_isFormatSupported(song.fileExtension))
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: theme.colorScheme.primary.withOpacity(0.3),
-                  width: 0.5,
-                ),
-              ),
-              child: Text(
-                song.fileExtension.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          Text(
-            song.durationText,
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.textTheme.bodySmall?.color,
-            ),
-          ),
-        ],
-      ),
+      trailing: trailing ?? _buildDefaultTrailing(context),
     );
 
     // 如果有滑动操作，包装在 Slidable 中
@@ -111,20 +82,51 @@ class SongListItem extends StatelessWidget {
           extentRatio: 0.5,
           children: [
             if (onToggleFavorite != null)
-              SlidableAction(
+              CustomSlidableAction(
                 onPressed: (_) => onToggleFavorite!(),
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                icon: Icons.favorite_border,
-                label: '收藏',
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Consumer<PlaylistProvider>(
+                      builder: (context, provider, child) {
+                        final isFav = provider.favorites.any((s) => s.id == song.id);
+                        return Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          size: 24,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    Consumer<PlaylistProvider>(
+                      builder: (context, provider, child) {
+                        final isFav = provider.favorites.any((s) => s.id == song.id);
+                        return Text(
+                          isFav ? '取消收藏' : '收藏',
+                          style: const TextStyle(fontSize: 12),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             if (onAddToPlaylist != null)
-              SlidableAction(
+              CustomSlidableAction(
                 onPressed: (_) => onAddToPlaylist!(),
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                icon: Icons.playlist_add,
-                label: '歌单',
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.playlist_add, size: 24),
+                    SizedBox(height: 4),
+                    Text(
+                      '歌单',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -133,6 +135,129 @@ class SongListItem extends StatelessWidget {
     }
 
     return content;
+  }
+
+  Widget _buildDefaultTrailing(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 格式标签（不支持的格式）
+        if (!_isFormatSupported(song.fileExtension))
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: theme.colorScheme.primary.withOpacity(0.3),
+                width: 0.5,
+              ),
+            ),
+            child: Text(
+              song.fileExtension.toUpperCase(),
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        Text(
+          song.durationText,
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.textTheme.bodySmall?.color,
+          ),
+        ),
+        // 更多选项按钮
+        IconButton(
+          icon: const Icon(Icons.more_vert, size: 20),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          onPressed: () => _showMoreOptions(context),
+        ),
+      ],
+    );
+  }
+
+  void _showMoreOptions(BuildContext context) {
+    final playlistProvider = context.read<PlaylistProvider>();
+    final isFavorite = playlistProvider.favorites.any((s) => s.id == song.id);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 歌曲预览
+            ListTile(
+              leading: AlbumArt(id: song.id, size: 48, borderRadius: 8),
+              title: Text(
+                song.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                song.artist,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Divider(),
+            // 收藏
+            ListTile(
+              leading: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : null,
+              ),
+              title: Text(isFavorite ? '取消收藏' : '收藏'),
+              onTap: () {
+                Navigator.pop(context);
+                playlistProvider.toggleFavorite(song);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isFavorite ? '已取消收藏' : '已添加到收藏'),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+            // 添加到歌单
+            ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: const Text('添加到歌单'),
+              onTap: () {
+                Navigator.pop(context);
+                showAddToPlaylistDialog(context, song);
+              },
+            ),
+            // 下一首播放
+            if (onPlayNext != null)
+              ListTile(
+                leading: const Icon(Icons.play_circle_outline),
+                title: const Text('下一首播放'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onPlayNext!();
+                },
+              ),
+            // 歌曲信息
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('歌曲信息'),
+              onTap: () {
+                Navigator.pop(context);
+                showSongInfoDialog(context, song);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -6,6 +6,7 @@ import '../../providers/playlist_provider.dart';
 import '../../providers/library_provider.dart';
 import '../../widgets/common/album_art.dart';
 import '../../widgets/common/song_list_item.dart';
+import '../../widgets/common/add_to_playlist_dialog.dart';
 
 enum QuickAccessType {
   favorites,
@@ -234,12 +235,37 @@ class _QuickAccessSongsScreenState extends State<QuickAccessSongsScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final song = _songs[index];
+                          final playlistProvider = context.read<PlaylistProvider>();
                           return SongListItem(
                             song: song,
                             onTap: () {
                               context.read<PlayerProvider>().playSong(
                                 song,
                                 queue: _songs,
+                              );
+                            },
+                            onToggleFavorite: () async {
+                              await playlistProvider.toggleFavorite(song);
+                              final isFav = playlistProvider.favorites.any((s) => s.id == song.id);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(isFav ? '已添加到收藏' : '已取消收藏'),
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                              }
+                            },
+                            onAddToPlaylist: () {
+                              showAddToPlaylistDialog(context, song);
+                            },
+                            onPlayNext: () {
+                              // TODO: 实现添加到播放队列功能
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('已添加到下一首播放'),
+                                  duration: Duration(seconds: 1),
+                                ),
                               );
                             },
                           );

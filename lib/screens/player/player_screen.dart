@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
+import '../../providers/playlist_provider.dart';
 import '../../widgets/common/album_art.dart';
+import '../../widgets/common/add_to_playlist_dialog.dart';
+import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/player/player_controls.dart';
 
 class PlayerScreen extends StatelessWidget {
@@ -42,7 +45,7 @@ class PlayerScreen extends StatelessWidget {
                       ),
                       IconButton(
                         icon: const Icon(Icons.more_vert),
-                        onPressed: () => _showMoreOptions(context),
+                        onPressed: () => _showMoreOptions(context, song),
                       ),
                     ],
                   ),
@@ -212,32 +215,51 @@ class PlayerScreen extends StatelessWidget {
     );
   }
 
-  void _showMoreOptions(BuildContext context) {
+  void _showMoreOptions(BuildContext context, var song) {
+    final playlistProvider = context.read<PlaylistProvider>();
+    final isFavorite = playlistProvider.favorites.any((s) => s.id == song.id);
+
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 收藏
             ListTile(
-              leading: const Icon(Icons.favorite_border),
-              title: const Text('收藏'),
-              onTap: () => Navigator.pop(context),
+              leading: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : null,
+              ),
+              title: Text(isFavorite ? '取消收藏' : '收藏'),
+              onTap: () {
+                Navigator.pop(context);
+                playlistProvider.toggleFavorite(song);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isFavorite ? '已取消收藏' : '已添加到收藏'),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
             ),
+            // 添加到歌单
             ListTile(
               leading: const Icon(Icons.playlist_add),
               title: const Text('添加到歌单'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                showAddToPlaylistDialog(context, song);
+              },
             ),
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: const Text('分享'),
-              onTap: () => Navigator.pop(context),
-            ),
+            // 歌曲信息
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('歌曲信息'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                showSongInfoDialog(context, song);
+              },
             ),
           ],
         ),
