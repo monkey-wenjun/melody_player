@@ -45,7 +45,7 @@
 ## 📸 界面预览
 
 <p align="center">
-  <img src="https://file.awen.me/20260218203625125.jpg" alt="首页界面" width="45%">
+  <img src="https://file.awen.me/20260218203847888.jpg" alt="首页界面" width="45%">
   &nbsp;&nbsp;
   <img src="https://file.awen.me/20260218203655563.jpg" alt="播放界面" width="45%">
 </p>
