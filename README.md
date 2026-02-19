@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.0-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.17-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -21,19 +21,23 @@
 - **高品质音频播放** - 基于 just_audio 引擎，支持多种音频格式
 - **后台播放** - 支持后台播放和通知栏控制，锁屏也能控制音乐
 - **播放模式** - 顺序播放、随机播放、单曲循环、列表循环四种模式
-- **歌词显示** - 支持歌词同步显示（开发中）
+- **黑胶唱片播放器** - 独特的黑胶唱片旋转动画效果，带金属质感唱臂
+- **歌词显示** - 支持 LRC 格式歌词，自动同步滚动显示
 
 ### 📱 本地音乐管理
 - **智能扫描** - 自动扫描设备中的音乐文件，智能过滤录音、铃声等非音乐文件
 - **多维度浏览** - 按歌曲、歌手、专辑分类浏览
 - **播放列表** - 创建自定义播放列表，管理你的音乐收藏
+- **歌单封面** - 歌单列表自动显示歌曲封面缩略图
 - **最近播放** - 自动记录最近播放的 50 首歌曲
+- **收藏功能** - 一键收藏喜欢的歌曲
 
 ### 🎨 界面与体验
 - **精美界面** - 简洁清新的 Material Design 设计风格
 - **深色模式** - 支持浅色/深色主题切换，适配系统主题
 - **流畅动画** - 精心设计的转场动画和交互反馈
-- **迷你播放器** - 底部常驻迷你播放条，随时控制播放
+- **迷你播放器** - 底部常驻迷你播放条，支持左右滑动切换歌词显示
+- **手势操作** - 播放器页面下滑隐藏，右滑显示歌词
 
 ### 🔄 其他功能
 - **自动更新** - 自动检测新版本并提示更新
@@ -61,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.1) | [点击下载](https://file.awen.me/music/melody_player_v1.9.1.apk) | ~125 MB |
+| 最新版 (v1.9.17) | [点击下载](https://file.awen.me/music/melody_player_v1.9.17.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -189,6 +193,16 @@ build/app/outputs/flutter-apk/app-release.apk
 ---
 
 ## 🚀 更新日志
+
+### v1.9.17 (2026-02-19)
+- ✨ 新增黑胶唱片播放器效果，带金属质感唱臂
+- ✨ 新增歌词显示功能（右滑播放器页面查看）
+- ✨ 新增歌单封面缩略图显示
+- ✨ MiniPlayer 支持左右滑动切换歌词显示
+- ✨ 播放器页面支持下滑手势隐藏
+- 🎨 优化后台播放通知栏显示
+- 🔧 修复自动更新检测逻辑
+- 🔧 修复歌单详情无法点击问题
 
 ### v1.9.0 (2026-02-18)
 - ✨ 新增自动更新检查功能

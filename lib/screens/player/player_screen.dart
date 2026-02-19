@@ -3,13 +3,28 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/playlist_provider.dart';
-import '../../widgets/common/album_art.dart';
 import '../../widgets/common/add_to_playlist_dialog.dart';
 import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/player/player_controls.dart';
+import '../../widgets/player/vinyl_record.dart';
+import '../../widgets/player/lyrics_view.dart';
 
-class PlayerScreen extends StatelessWidget {
+class PlayerScreen extends StatefulWidget {
   const PlayerScreen({Key? key}) : super(key: key);
+
+  @override
+  State<PlayerScreen> createState() => _PlayerScreenState();
+}
+
+class _PlayerScreenState extends State<PlayerScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,200 +33,251 @@ class PlayerScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A2E) : theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Consumer<PlayerProvider>(
-          builder: (context, player, child) {
-            final song = player.currentSong;
-            
-            if (song == null) {
-              return const Center(child: Text('没有正在播放的歌曲'));
-            }
+      body: GestureDetector(
+        // 下滑手势隐藏播放器
+        onVerticalDragEnd: (details) {
+          if (details.primaryVelocity != null && details.primaryVelocity! > 150) {
+            // 向下滑动速度超过阈值，关闭页面
+            Navigator.pop(context);
+          }
+        },
+        child: SafeArea(
+          child: Consumer<PlayerProvider>(
+            builder: (context, player, child) {
+              final song = player.currentSong;
+              
+              if (song == null) {
+                return const Center(child: Text('没有正在播放的歌曲'));
+              }
 
-            return Column(
-              children: [
-                // 顶部导航
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_down, size: 32),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Text(
-                        '正在播放',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () => _showMoreOptions(context, song),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // 专辑封面
-                Expanded(
-                  flex: 3,
-                  child: Center(
-                    child: Hero(
-                      tag: 'album_art_${song.id}',
-                      child: LargeAlbumArt(id: song.id, size: 280),
-                    ),
-                  ),
-                ),
-
-                // 歌曲信息
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              return Column(
+                children: [
+                  // 顶部导航
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          song.title,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
+                        IconButton(
+                          icon: const Icon(Icons.keyboard_arrow_down, size: 32),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          song.artist,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.textTheme.bodyMedium?.color,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        const Text(
+                          '正在播放',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
-                        if (song.album.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            song.album,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.textTheme.bodySmall?.color,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                        IconButton(
+                          icon: const Icon(Icons.more_vert),
+                          onPressed: () => _showMoreOptions(context, song),
+                        ),
                       ],
                     ),
                   ),
-                ),
 
-                // 进度条
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: ProgressBar(
-                    progress: player.position,
-                    total: player.duration,
-                    onSeek: player.seek,
-                    barHeight: 4,
-                    thumbRadius: 6,
-                    thumbGlowRadius: 12,
-                    timeLabelLocation: TimeLabelLocation.below,
-                    timeLabelTextStyle: TextStyle(
-                      fontSize: 12,
-                      color: theme.textTheme.bodySmall?.color,
+                  // 页面指示器
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: PageIndicator(
+                      count: 2,
+                      currentIndex: _currentPage,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 24),
+                  // 可滑动的页面内容
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
+                      children: [
+                        // 第一页：黑胶唱片 + 歌曲信息
+                        _buildPlayerPage(context, song, player, theme),
+                        // 第二页：歌词
+                        LyricsView(song: song),
+                      ],
+                    ),
+                  ),
 
-                // 错误提示
-                if (player.errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.errorContainer.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 16,
-                            color: theme.colorScheme.error,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              player.errorMessage!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.error,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.close,
+                  // 错误提示
+                  if (player.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.errorContainer.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
                               size: 16,
                               color: theme.colorScheme.error,
                             ),
-                            onPressed: player.clearError,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                player.errorMessage!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: theme.colorScheme.error,
+                              ),
+                              onPressed: player.clearError,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                // 播放控制
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        player.getPlaybackModeIcon(),
-                        color: theme.colorScheme.primary,
-                      ),
-                      tooltip: player.getPlaybackModeText(),
-                      onPressed: player.cyclePlaybackMode,
-                    ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(Icons.skip_previous, size: 36),
-                      onPressed: player.previous,
-                    ),
-                    const SizedBox(width: 16),
-                    PlayPauseButton(
-                      isPlaying: player.isPlaying,
-                      onPressed: player.togglePlay,
-                      size: 72,
-                      iconSize: 36,
-                    ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(Icons.skip_next, size: 36),
-                      onPressed: player.next,
-                    ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(Icons.queue_music),
-                      onPressed: () => _showPlaylist(context),
-                    ),
-                  ],
-                ),
+                  // 播放控制（固定在底部）
+                  _buildPlayerControls(context, player, theme),
 
-                const SizedBox(height: 32),
-              ],
-            );
-          },
+                  const SizedBox(height: 32),
+                ],
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+
+  /// 播放器页面（唱片 + 歌曲信息）
+  Widget _buildPlayerPage(BuildContext context, var song, PlayerProvider player, ThemeData theme) {
+    return Column(
+      children: [
+        // 黑胶唱片播放器
+        Expanded(
+          flex: 3,
+          child: Center(
+            child: Hero(
+              tag: 'album_art_${song.id}',
+              child: VinylPlayerWithArm(
+                songId: song.id,
+                size: 320,
+              ),
+            ),
+          ),
+        ),
+
+        // 歌曲信息
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  song.title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  song.artist,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (song.album.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    song.album,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+
+        // 进度条
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: ProgressBar(
+            progress: player.position,
+            total: player.duration,
+            onSeek: player.seek,
+            barHeight: 4,
+            thumbRadius: 6,
+            thumbGlowRadius: 12,
+            timeLabelLocation: TimeLabelLocation.below,
+            timeLabelTextStyle: TextStyle(
+              fontSize: 12,
+              color: theme.textTheme.bodySmall?.color,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  /// 播放控制按钮
+  Widget _buildPlayerControls(BuildContext context, PlayerProvider player, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(
+            player.getPlaybackModeIcon(),
+            color: theme.colorScheme.primary,
+          ),
+          tooltip: player.getPlaybackModeText(),
+          onPressed: player.cyclePlaybackMode,
+        ),
+        const SizedBox(width: 16),
+        IconButton(
+          icon: const Icon(Icons.skip_previous, size: 36),
+          onPressed: player.previous,
+        ),
+        const SizedBox(width: 16),
+        PlayPauseButton(
+          isPlaying: player.isPlaying,
+          onPressed: player.togglePlay,
+          size: 72,
+          iconSize: 36,
+        ),
+        const SizedBox(width: 16),
+        IconButton(
+          icon: const Icon(Icons.skip_next, size: 36),
+          onPressed: player.next,
+        ),
+        const SizedBox(width: 16),
+        IconButton(
+          icon: const Icon(Icons.queue_music),
+          onPressed: () => _showPlaylist(context),
+        ),
+      ],
     );
   }
 

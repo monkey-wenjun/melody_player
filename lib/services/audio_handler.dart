@@ -29,9 +29,6 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       _updatePlaybackState();
     });
 
-    // 监听当前歌曲变化（仅用于 ConcatenatingAudioSource，我们手动管理播放列表）
-    // _player.currentIndexStream 不适用于单个 AudioSource.uri 切换方式
-
     // 监听处理完成
     _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
@@ -44,6 +41,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       }
       _updatePlaybackState();
     });
+    
+    // 初始化空的播放状态，确保通知栏控件立即可用
+    _updatePlaybackState();
   }
 
   /// 更新播放状态（控制通知栏按钮）
@@ -62,6 +62,8 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
+        MediaAction.skipToPrevious,
+        MediaAction.skipToNext,
       },
       androidCompactActionIndices: const [0, 1, 2], // 显示上一首、播放/暂停、下一首
       processingState: _mapProcessingState(_player.processingState),
@@ -70,7 +72,21 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       bufferedPosition: _player.bufferedPosition,
       speed: _player.speed,
       queueIndex: _currentIndex,
+      repeatMode: _mapRepeatMode(_loopMode),
+      shuffleMode: _shuffleMode ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
     ));
+  }
+
+  /// 映射循环模式
+  AudioServiceRepeatMode _mapRepeatMode(LoopMode mode) {
+    switch (mode) {
+      case LoopMode.off:
+        return AudioServiceRepeatMode.none;
+      case LoopMode.one:
+        return AudioServiceRepeatMode.one;
+      case LoopMode.all:
+        return AudioServiceRepeatMode.all;
+    }
   }
 
   /// 更新当前媒体项
@@ -78,19 +94,28 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     if (_songs.isEmpty || _currentIndex >= _songs.length) return;
     
     final song = _songs[_currentIndex];
+    
+    // 构建专辑封面 URI
+    Uri? artUri;
+    if (song.albumId != null && song.albumId!.isNotEmpty) {
+      artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+    }
+    
     final mediaItem = MediaItem(
-      id: song.id,
+      id: song.uri,  // 使用 URI 作为唯一标识
       title: song.title,
-      displayTitle: song.title,
+      album: song.album.isEmpty ? '未知专辑' : song.album,
       artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
-      album: song.album,
       duration: Duration(milliseconds: song.duration),
-      artUri: song.albumId != null 
-          ? Uri.parse('content://media/external/audio/albumart/${song.albumId}')
-          : null,
+      artUri: artUri,
+      displayTitle: song.title,
+      displaySubtitle: song.artist.isEmpty ? '未知艺术家' : song.artist,
+      displayDescription: song.album.isEmpty ? '未知专辑' : song.album,
     );
     
     this.mediaItem.add(mediaItem);
+    
+    logInfo('AudioHandler', 'MediaItem updated: ${song.title}, artUri: $artUri');
   }
 
   /// 设置播放列表
@@ -98,18 +123,29 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     _songs = List.from(songs);
     _currentIndex = initialIndex.clamp(0, _songs.length - 1);
     
+    // 构建队列
+    final queueItems = _songs.map((song) {
+      Uri? artUri;
+      if (song.albumId != null && song.albumId!.isNotEmpty) {
+        artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+      }
+      
+      return MediaItem(
+        id: song.uri,
+        title: song.title,
+        album: song.album.isEmpty ? '未知专辑' : song.album,
+        artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
+        duration: Duration(milliseconds: song.duration),
+        artUri: artUri,
+        displayTitle: song.title,
+        displaySubtitle: song.artist.isEmpty ? '未知艺术家' : song.artist,
+      );
+    }).toList();
+    
     // 更新队列
-    queue.add(_songs.map((song) => MediaItem(
-      id: song.id,
-      title: song.title,
-      displayTitle: song.title,
-      artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
-      album: song.album,
-      duration: Duration(milliseconds: song.duration),
-      artUri: song.albumId != null 
-          ? Uri.parse('content://media/external/audio/albumart/${song.albumId}')
-          : null,
-    )).toList());
+    queue.add(queueItems);
+    
+    logInfo('AudioHandler', 'Playlist set: ${_songs.length} songs, index: $_currentIndex');
 
     _currentIndexController.add(_currentIndex);
     await _playCurrentSong();
@@ -125,6 +161,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     logInfo('AudioHandler', 'Playing: ${song.title}');
 
     try {
+      // 先更新媒体项，确保通知栏能显示歌曲信息
+      _updateMediaItem();
+      
       final uri = song.uri.startsWith('content://') 
           ? Uri.parse(song.uri) 
           : Uri.file(song.uri);
@@ -132,7 +171,6 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();
       
-      _updateMediaItem();
       _updatePlaybackState();
     } catch (e) {
       logInfo('AudioHandler', 'Error playing: $e');

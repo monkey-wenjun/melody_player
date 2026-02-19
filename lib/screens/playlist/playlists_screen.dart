@@ -1,9 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/song.dart';
+import '../../models/playlist.dart';
 import '../../providers/playlist_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../widgets/common/song_list_item.dart';
+import '../../widgets/common/album_art.dart';
 import '../../widgets/common/add_to_playlist_dialog.dart';
+
+/// 歌单封面组件 - 随机显示歌单中的一首歌曲封面
+class PlaylistCover extends StatelessWidget {
+  final Playlist playlist;
+  final double size;
+
+  const PlaylistCover({
+    Key? key,
+    required this.playlist,
+    this.size = 48,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // 如果歌单有歌曲，随机选择一首显示封面
+    final songId = playlist.songs.isNotEmpty
+        ? playlist.songs.first.id
+        : null;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: songId != null
+          ? AlbumArt(
+              id: songId,
+              size: size,
+              borderRadius: 0,
+            )
+          : Icon(
+              Icons.playlist_play,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+    );
+  }
+}
 
 class PlaylistsScreen extends StatelessWidget {
   const PlaylistsScreen({Key? key}) : super(key: key);
@@ -59,18 +102,7 @@ class PlaylistsScreen extends StatelessWidget {
                 )
               else
                 ...provider.playlists.map((playlist) => ListTile(
-                  leading: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.playlist_play,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
+                  leading: PlaylistCover(playlist: playlist),
                   title: Text(playlist.name),
                   subtitle: Text('${playlist.songCount} 首歌曲'),
                   trailing: PopupMenuButton(
@@ -271,6 +303,235 @@ class PlaylistsScreen extends StatelessWidget {
   }
 
   void _showPlaylistDetail(BuildContext context, String playlistId) {
-    // 实现歌单详情页面
+    final playlist = context.read<PlaylistProvider>().playlists
+        .firstWhere((p) => p.id == playlistId);
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistDetailScreen(playlist: playlist),
+      ),
+    );
+  }
+}
+
+/// 歌单详情页面
+class PlaylistDetailScreen extends StatelessWidget {
+  final Playlist playlist;
+
+  const PlaylistDetailScreen({
+    Key? key,
+    required this.playlist,
+  }) : super(key: key);
+
+  String get _totalDurationText {
+    final totalSeconds = playlist.totalDuration ~/ 1000;
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    
+    if (hours > 0) {
+      return '$hours小时${minutes}分钟';
+    } else {
+      return '$minutes分钟';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // 顶部标题区域
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary.withOpacity(0.8),
+                      theme.colorScheme.primary.withOpacity(0.4),
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      Icon(
+                        Icons.queue_music,
+                        size: 64,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        playlist.name,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${playlist.songCount} 首歌曲 · $_totalDurationText',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 操作按钮
+          if (playlist.songs.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<PlayerProvider>().setPlaylist(
+                            playlist.songs,
+                            autoPlay: true,
+                          );
+                        },
+                        icon: const Icon(Icons.play_arrow),
+                        label: const Text('播放全部'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final shuffled = List<Song>.from(playlist.songs)..shuffle();
+                          context.read<PlayerProvider>().setPlaylist(
+                            shuffled,
+                            autoPlay: true,
+                          );
+                        },
+                        icon: const Icon(Icons.shuffle),
+                        label: const Text('随机播放'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // 歌曲列表
+          Consumer<PlaylistProvider>(
+            builder: (context, provider, child) {
+              // 重新获取最新的歌单数据
+              final currentPlaylist = provider.playlists
+                  .firstWhere((p) => p.id == playlist.id, orElse: () => playlist);
+              
+              if (currentPlaylist.songs.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.music_off, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('歌单为空', style: TextStyle(color: Colors.grey)),
+                        SizedBox(height: 8),
+                        Text('快去添加歌曲吧', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final song = currentPlaylist.songs[index];
+                    return SongListItem(
+                      song: song,
+                      onTap: () {
+                        context.read<PlayerProvider>().setPlaylist(
+                          currentPlaylist.songs,
+                          initialIndex: index,
+                        );
+                      },
+                      onToggleFavorite: () => provider.toggleFavorite(song),
+                      onAddToPlaylist: () {
+                        showAddToPlaylistDialog(context, song);
+                      },
+                      onPlayNext: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('已添加到下一首播放'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                        onPressed: () => _removeSong(context, currentPlaylist.id, song.id),
+                      ),
+                    );
+                  },
+                  childCount: currentPlaylist.songs.length,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeSong(BuildContext context, String playlistId, String songId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('移除歌曲'),
+        content: const Text('确定要从歌单中移除这首歌曲吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<PlaylistProvider>().removeSongFromPlaylist(playlistId, songId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('已从歌单中移除'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('移除'),
+          ),
+        ],
+      ),
+    );
   }
 }
