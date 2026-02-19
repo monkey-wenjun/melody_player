@@ -34,9 +34,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A2E) : theme.scaffoldBackgroundColor,
       body: GestureDetector(
-        // 下滑手势隐藏播放器
+        // 下滑手势隐藏播放器 - 更灵敏的关闭体验
         onVerticalDragEnd: (details) {
-          if (details.primaryVelocity != null && details.primaryVelocity! > 150) {
+          if (details.primaryVelocity != null && details.primaryVelocity! > 100) {
             // 向下滑动速度超过阈值，关闭页面
             Navigator.pop(context);
           }
