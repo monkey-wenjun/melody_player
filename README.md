@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.17-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.18-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -65,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.17) | [点击下载](https://file.awen.me/music/melody_player_v1.9.17.apk) | ~52 MB |
+| 最新版 (v1.9.18) | [点击下载](https://file.awen.me/music/melody_player_v1.9.18.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
