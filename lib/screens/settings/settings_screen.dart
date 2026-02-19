@@ -511,6 +511,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           '悦音是一款简洁清新的本地音乐播放器，专注于提供优质的音乐播放体验。',
           style: TextStyle(fontSize: 14),
         ),
+        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: 8),
+        const Text(
+          '联系我们',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ListTile(
+          leading: const Icon(Icons.email, size: 20),
+          title: const Text('邮箱'),
+          subtitle: const Text('hi@awen.me'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+        ListTile(
+          leading: const Icon(Icons.language, size: 20),
+          title: const Text('博客'),
+          subtitle: const Text('https://www.awen.me'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
       ],
     );
   }
