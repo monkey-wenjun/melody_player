@@ -11,6 +11,8 @@ import '../../widgets/common/add_to_playlist_dialog.dart';
 import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/common/album_art.dart';
 import '../folder_picker/folder_picker_screen.dart';
+import 'album_detail_screen.dart';
+import 'artist_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({Key? key}) : super(key: key);
@@ -457,12 +459,19 @@ class _AlbumCard extends StatelessWidget {
 
   const _AlbumCard({required this.album});
 
+  void _navigateToDetail(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AlbumDetailScreen(album: album),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // 导航到专辑详情
-      },
+      onTap: () => _navigateToDetail(context),
       borderRadius: BorderRadius.circular(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +535,12 @@ class _ArtistsTab extends StatelessWidget {
           title: Text(artist.name),
           subtitle: Text('${artist.numberOfTracks} 首歌曲 · ${artist.numberOfAlbums} 张专辑'),
           onTap: () {
-            // 导航到艺术家详情
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ArtistDetailScreen(artist: artist),
+              ),
+            );
           },
         );
       },

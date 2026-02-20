@@ -62,6 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _pageController.jumpToPage(index);
   }
 
+  void _navigateToLibrarySearch() {
+    // 跳转到音乐库页面（索引1）
+    _onTabChanged(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,20 +178,34 @@ class _HomeTabState extends State<HomeTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 搜索栏
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: '搜索音乐...',
-                      prefixIcon: const Icon(Icons.search),
-                      filled: true,
-                      fillColor: theme.colorScheme.surface,
-                      border: OutlineInputBorder(
+                  InkWell(
+                    onTap: () {
+                      _navigateToLibrarySearch();
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.search,
+                            color: theme.iconTheme.color?.withOpacity(0.6),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '搜索音乐...',
+                            style: TextStyle(
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    onTap: () {
-                      // 跳转到音乐库并聚焦搜索
-                    },
                   ),
                   const SizedBox(height: 24),
                   
