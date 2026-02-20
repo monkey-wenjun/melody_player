@@ -48,7 +48,13 @@ class SongListItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: showAlbumArt
-          ? AlbumArt(id: song.id, size: 48, borderRadius: 8)
+          ? AlbumArt(
+              id: song.id,
+              size: 48,
+              borderRadius: 8,
+              title: song.title,
+              artist: song.artist,
+            )
           : null,
       title: Text(
         song.title,
@@ -195,7 +201,13 @@ class SongListItem extends StatelessWidget {
           children: [
             // 歌曲预览
             ListTile(
-              leading: AlbumArt(id: song.id, size: 48, borderRadius: 8),
+              leading: AlbumArt(
+                id: song.id,
+                size: 48,
+                borderRadius: 8,
+                title: song.title,
+                artist: song.artist,
+              ),
               title: Text(
                 song.title,
                 maxLines: 1,

@@ -1,11 +1,157 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/media_scanner_service.dart';
 
 // 全局缓存，避免重复查询
 final Map<String, Uint8List?> _artworkCache = {};
+
+// 预定义的渐变配色方案
+final List<List<Color>> _gradientPalettes = [
+  [const Color(0xFF667eea), const Color(0xFF764ba2)], // 紫蓝渐变
+  [const Color(0xFFf093fb), const Color(0xFFf5576c)], // 粉紫渐变
+  [const Color(0xFF4facfe), const Color(0xFF00f2fe)], // 青色渐变
+  [const Color(0xFF43e97b), const Color(0xFF38f9d7)], // 绿色渐变
+  [const Color(0xFFfa709a), const Color(0xFFfee140)], // 橙粉渐变
+  [const Color(0xFF30cfd0), const Color(0xFF330867)], // 深青紫渐变
+  [const Color(0xFFa8edea), const Color(0xFFfed6e3)], // 柔和粉青
+  [const Color(0xFFff9a9e), const Color(0xFFfecfef)], // 浅粉渐变
+  [const Color(0xFFffecd2), const Color(0xFFfcb69f)], // 暖橙渐变
+  [const Color(0xFF667eea), const Color(0xFF764ba2)], // 蓝紫渐变
+  [const Color(0xFF11998e), const Color(0xFF38ef7d)], // 翠绿渐变
+  [const Color(0xFFfc5c7d), const Color(0xFF6a82fb)], // 粉蓝渐变
+];
+
+/// 根据ID获取一致的渐变颜色
+List<Color> _getGradientColors(String id) {
+  int hash = 0;
+  for (int i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash) + id.codeUnitAt(i);
+    hash = hash & 0xFFFFFFFF;
+  }
+  return _gradientPalettes[hash.abs() % _gradientPalettes.length];
+}
+
+/// 获取标题的首字母（用于大字体显示）
+String _getInitial(String title) {
+  if (title.isEmpty) return '♪';
+  // 取第一个非空字符
+  final firstChar = title.trim()[0];
+  // 如果是英文或数字，返回大写
+  if (RegExp(r'[a-zA-Z0-9]').hasMatch(firstChar)) {
+    return firstChar.toUpperCase();
+  }
+  // 否则返回该字符
+  return firstChar;
+}
+
+/// 构建无封面时的占位图 Widget
+class _DefaultCoverWidget extends StatelessWidget {
+  final String id;
+  final String? title;
+  final String? artist;
+  final double size;
+
+  const _DefaultCoverWidget({
+    required this.id,
+    this.title,
+    this.artist,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _getGradientColors(id);
+    final isSmall = size < 60;
+    final isMedium = size >= 60 && size < 100;
+    
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+      ),
+      child: isSmall 
+        ? _buildSmallLayout()
+        : _buildLargeLayout(isMedium),
+    );
+  }
+
+  /// 小尺寸布局：只显示首字母大图标
+  Widget _buildSmallLayout() {
+    return Center(
+      child: Text(
+        _getInitial(title ?? ''),
+        style: TextStyle(
+          fontSize: size * 0.45,
+          fontWeight: FontWeight.bold,
+          color: Colors.white.withOpacity(0.9),
+        ),
+      ),
+    );
+  }
+
+  /// 中大尺寸布局：显示首字母 + 歌曲名/歌手名
+  Widget _buildLargeLayout(bool isMedium) {
+    return Padding(
+      padding: EdgeInsets.all(size * 0.1),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 首字母大图标
+          Text(
+            _getInitial(title ?? ''),
+            style: TextStyle(
+              fontSize: isMedium ? size * 0.35 : size * 0.4,
+              fontWeight: FontWeight.bold,
+              color: Colors.white.withOpacity(0.95),
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: size * 0.05),
+          // 歌曲名
+          if (title != null && title!.isNotEmpty)
+            Text(
+              title!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isMedium ? size * 0.1 : size * 0.08,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.95),
+              ),
+            ),
+          // 歌手名
+          if (artist != null && artist!.isNotEmpty && !isMedium)
+            Padding(
+              padding: EdgeInsets.only(top: size * 0.02),
+              child: Text(
+                artist!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: size * 0.06,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 class AlbumArt extends StatefulWidget {
   final String id;
@@ -13,6 +159,8 @@ class AlbumArt extends StatefulWidget {
   final double size;
   final double borderRadius;
   final BoxFit fit;
+  final String? title;
+  final String? artist;
 
   const AlbumArt({
     Key? key,
@@ -21,6 +169,8 @@ class AlbumArt extends StatefulWidget {
     this.size = 56,
     this.borderRadius = 8,
     this.fit = BoxFit.cover,
+    this.title,
+    this.artist,
   }) : super(key: key);
 
   @override
@@ -78,15 +228,14 @@ class _AlbumArtState extends State<AlbumArt> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     Widget child;
     if (!_loaded) {
-      // 加载中显示占位图
-      child = Icon(
-        Icons.music_note,
-        size: widget.size * 0.5,
-        color: isDark ? Colors.grey[600] : Colors.grey[400],
+      // 加载中显示渐变占位图
+      child = _DefaultCoverWidget(
+        id: widget.id,
+        title: widget.title,
+        artist: widget.artist,
+        size: widget.size,
       );
     } else if (_imageData != null) {
       // 显示图片
@@ -96,11 +245,12 @@ class _AlbumArtState extends State<AlbumArt> {
         gaplessPlayback: true, // 避免闪烁
       );
     } else {
-      // 无图片
-      child = Icon(
-        Icons.music_note,
-        size: widget.size * 0.5,
-        color: isDark ? Colors.grey[600] : Colors.grey[400],
+      // 无图片时显示设计的默认封面
+      child = _DefaultCoverWidget(
+        id: widget.id,
+        title: widget.title,
+        artist: widget.artist,
+        size: widget.size,
       );
     }
 
@@ -109,7 +259,7 @@ class _AlbumArtState extends State<AlbumArt> {
       child: Container(
         width: widget.size,
         height: widget.size,
-        color: isDark ? Colors.grey[800] : Colors.grey[200],
+        color: Colors.grey[300],
         child: child,
       ),
     );
@@ -120,31 +270,42 @@ class AlbumArtImage extends StatelessWidget {
   final Uint8List? imageData;
   final double size;
   final double borderRadius;
+  final String? id;
+  final String? title;
+  final String? artist;
 
   const AlbumArtImage({
     Key? key,
     this.imageData,
     this.size = 56,
     this.borderRadius = 8,
+    this.id,
+    this.title,
+    this.artist,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: Container(
         width: size,
         height: size,
-        color: isDark ? Colors.grey[800] : Colors.grey[200],
+        color: Colors.grey[300],
         child: imageData != null
             ? Image.memory(imageData!, fit: BoxFit.cover, gaplessPlayback: true)
-            : Icon(
-                Icons.music_note,
-                size: size * 0.5,
-                color: isDark ? Colors.grey[600] : Colors.grey[400],
-              ),
+            : id != null
+                ? _DefaultCoverWidget(
+                    id: id!,
+                    title: title,
+                    artist: artist,
+                    size: size,
+                  )
+                : Icon(
+                    Icons.music_note,
+                    size: size * 0.5,
+                    color: Colors.grey[500],
+                  ),
       ),
     );
   }
@@ -153,11 +314,15 @@ class AlbumArtImage extends StatelessWidget {
 class LargeAlbumArt extends StatefulWidget {
   final String? id;
   final double size;
+  final String? title;
+  final String? artist;
 
   const LargeAlbumArt({
     Key? key,
     this.id,
     this.size = 280,
+    this.title,
+    this.artist,
   }) : super(key: key);
 
   @override
@@ -219,11 +384,16 @@ class _LargeAlbumArtState extends State<LargeAlbumArt> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     Widget child;
     if (!_loaded || _imageData == null) {
-      child = _buildPlaceholder(isDark);
+      child = widget.id != null
+          ? _DefaultCoverWidget(
+              id: widget.id!,
+              title: widget.title,
+              artist: widget.artist,
+              size: widget.size,
+            )
+          : _buildFallbackPlaceholder();
     } else {
       child = Image.memory(
         _imageData!,
@@ -252,14 +422,23 @@ class _LargeAlbumArtState extends State<LargeAlbumArt> {
     );
   }
 
-  Widget _buildPlaceholder(bool isDark) {
+  Widget _buildFallbackPlaceholder() {
+    final colors = _getGradientColors('default');
     return Container(
-      color: isDark ? const Color(0xFF2D2D4A) : const Color(0xFFE8E8E8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+      ),
       child: Center(
-        child: Icon(
-          Icons.music_note,
-          size: widget.size * 0.3,
-          color: isDark ? Colors.grey[600] : Colors.grey[400],
+        child: Text(
+          '♪',
+          style: TextStyle(
+            fontSize: widget.size * 0.3,
+            color: Colors.white.withOpacity(0.9),
+          ),
         ),
       ),
     );

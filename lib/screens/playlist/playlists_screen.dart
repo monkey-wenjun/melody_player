@@ -21,10 +21,8 @@ class PlaylistCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 如果歌单有歌曲，随机选择一首显示封面
-    final songId = playlist.songs.isNotEmpty
-        ? playlist.songs.first.id
-        : null;
+    // 如果歌单有歌曲，选择第一首显示封面
+    final song = playlist.songs.isNotEmpty ? playlist.songs.first : null;
 
     return Container(
       width: size,
@@ -34,11 +32,13 @@ class PlaylistCover extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
-      child: songId != null
+      child: song != null
           ? AlbumArt(
-              id: songId,
+              id: song.id,
               size: size,
               borderRadius: 0,
+              title: song.title,
+              artist: song.artist,
             )
           : Icon(
               Icons.playlist_play,

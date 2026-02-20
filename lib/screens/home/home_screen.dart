@@ -340,7 +340,12 @@ class _HomeTabState extends State<HomeTab> {
         return Column(
           children: displaySongs.map((song) => ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: AlbumArt(id: song.id, size: 48),
+            leading: AlbumArt(
+              id: song.id,
+              size: 48,
+              title: song.title,
+              artist: song.artist,
+            ),
             title: Text(
               song.title,
               maxLines: 1,
@@ -409,6 +414,8 @@ class RecentSongsList extends StatelessWidget {
                       id: song.id,
                       size: 120,
                       borderRadius: 12,
+                      title: song.title,
+                      artist: song.artist,
                     ),
                     const SizedBox(height: 8),
                     SizedBox(

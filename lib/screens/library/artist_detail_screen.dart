@@ -245,6 +245,8 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                                   type: ArtworkType.ALBUM,
                                   size: 130,
                                   borderRadius: 0,
+                                  title: album.title,
+                                  artist: album.artist,
                                 ),
                               ),
                               const SizedBox(height: 6),

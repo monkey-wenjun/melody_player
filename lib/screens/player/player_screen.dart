@@ -169,6 +169,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
               child: VinylPlayerWithArm(
                 songId: song.id,
                 size: 320,
+                title: song.title,
+                artist: song.artist,
               ),
             ),
           ),

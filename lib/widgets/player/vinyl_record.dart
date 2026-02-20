@@ -8,11 +8,15 @@ import '../common/album_art.dart';
 class VinylRecordPlayer extends StatefulWidget {
   final String songId;
   final double size;
+  final String? title;
+  final String? artist;
 
   const VinylRecordPlayer({
     Key? key,
     required this.songId,
     this.size = 280,
+    this.title,
+    this.artist,
   }) : super(key: key);
 
   @override
@@ -50,6 +54,8 @@ class _VinylRecordPlayerState extends State<VinylRecordPlayer>
           size: size,
           borderRadius: 0,
           fit: BoxFit.cover,
+          title: widget.title,
+          artist: widget.artist,
         ),
       ),
     );
@@ -211,11 +217,15 @@ class _VinylRecordPlayerState extends State<VinylRecordPlayer>
 class VinylPlayerWithArm extends StatefulWidget {
   final String songId;
   final double size;
+  final String? title;
+  final String? artist;
 
   const VinylPlayerWithArm({
     Key? key,
     required this.songId,
     this.size = 320,
+    this.title,
+    this.artist,
   }) : super(key: key);
 
   @override
@@ -262,6 +272,8 @@ class _VinylPlayerWithArmState extends State<VinylPlayerWithArm>
               VinylRecordPlayer(
                 songId: widget.songId,
                 size: widget.size * 0.85,
+                title: widget.title,
+                artist: widget.artist,
               ),
 
               // 唱臂

@@ -484,6 +484,8 @@ class _AlbumCard extends StatelessWidget {
                 type: ArtworkType.ALBUM,
                 size: double.infinity,
                 borderRadius: 0,
+                title: album.title,
+                artist: album.artist,
               ),
             ),
           ),

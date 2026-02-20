@@ -104,6 +104,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                           type: ArtworkType.ALBUM,
                           size: 160,
                           borderRadius: 0,
+                          title: widget.album.title,
+                          artist: widget.album.artist,
                         ),
                       ),
                     ),

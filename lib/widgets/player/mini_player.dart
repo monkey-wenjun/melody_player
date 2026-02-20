@@ -162,7 +162,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     },
                     child: _showLyrics && _lyricsLines.isNotEmpty
                         ? _buildLyricsIndicator(theme)
-                        : AlbumArt(id: song.id, size: 44, borderRadius: 6),
+                        : AlbumArt(
+                            id: song.id,
+                            size: 44,
+                            borderRadius: 6,
+                            title: song.title,
+                            artist: song.artist,
+                          ),
                   ),
                   const SizedBox(width: 12),
                   // 歌曲信息或滚动歌词
