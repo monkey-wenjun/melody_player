@@ -62,10 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _pageController.jumpToPage(index);
   }
 
-  void _navigateToLibrarySearch() {
-    // 跳转到音乐库页面（索引1）
-    _onTabChanged(1);
-  }
+  // 公共方法供子组件调用
+  void onTabChanged(int index) => _onTabChanged(index);
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +150,12 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  void _navigateToLibrarySearch() {
+    // 获取 HomeScreen 的状态并切换到音乐库页面
+    final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+    homeState?.onTabChanged(1);
+  }
+
   @override
   void initState() {
     super.initState();

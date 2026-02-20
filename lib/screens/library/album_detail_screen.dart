@@ -64,7 +64,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   void _shufflePlay() {
     if (_songs.isEmpty) return;
     final player = context.read<PlayerProvider>();
-    player.setPlaylist(_songs, initialIndex: 0, shuffle: true);
+    _songs.shuffle();
+    player.setPlaylist(_songs, initialIndex: 0);
   }
 
   @override
