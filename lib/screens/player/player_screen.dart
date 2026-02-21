@@ -3,11 +3,14 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/playlist_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/cast_service.dart';
 import '../../widgets/common/add_to_playlist_dialog.dart';
 import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/player/player_controls.dart';
 import '../../widgets/player/vinyl_record.dart';
 import '../../widgets/player/lyrics_view.dart';
+import '../../widgets/player/cast_button.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({Key? key}) : super(key: key);
@@ -65,6 +68,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         const Text(
                           '正在播放',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        // Google Cast 按钮
+                        Consumer<SettingsProvider>(
+                          builder: (context, settings, child) {
+                            if (!settings.castEnabled) return const SizedBox.shrink();
+                            return const CastButton();
+                          },
                         ),
                         // 定时播放按钮
                         _buildSleepTimerButton(context),

@@ -9,7 +9,7 @@ class SettingsProvider extends ChangeNotifier {
   static const String _autoScanKey = 'auto_scan';
   static const String _skipShortAudioKey = 'skip_short_audio';
   static const String _minDurationKey = 'min_duration';
-  static const String _dlnaEnabledKey = 'dlna_enabled';
+  static const String _castEnabledKey = 'cast_enabled';
   static const String _sleepTimerEnabledKey = 'sleep_timer_enabled';
   static const String _sleepTimerDurationKey = 'sleep_timer_duration';
 
@@ -21,7 +21,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _autoScan = true;
   bool _skipShortAudio = true;
   int _minDuration = 30; // 秒
-  bool _dlnaEnabled = false;
+  bool _castEnabled = false;
   bool _sleepTimerEnabled = false;
   int _sleepTimerDuration = 30; // 分钟
 
@@ -31,7 +31,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoScan => _autoScan;
   bool get skipShortAudio => _skipShortAudio;
   int get minDuration => _minDuration;
-  bool get dlnaEnabled => _dlnaEnabled;
+  bool get castEnabled => _castEnabled;
   bool get sleepTimerEnabled => _sleepTimerEnabled;
   int get sleepTimerDuration => _sleepTimerDuration;
 
@@ -77,8 +77,8 @@ class SettingsProvider extends ChangeNotifier {
     // 最小时长
     _minDuration = _prefs?.getInt(_minDurationKey) ?? 30;
     
-    // DLNA 投屏开关
-    _dlnaEnabled = _prefs?.getBool(_dlnaEnabledKey) ?? false;
+    // Google Cast 投屏开关
+    _castEnabled = _prefs?.getBool(_castEnabledKey) ?? false;
     
     // 定时播放
     _sleepTimerEnabled = _prefs?.getBool(_sleepTimerEnabledKey) ?? false;
@@ -141,10 +141,10 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // DLNA 投屏开关
-  Future<void> setDlnaEnabled(bool value) async {
-    _dlnaEnabled = value;
-    await _prefs?.setBool(_dlnaEnabledKey, value);
+  // Google Cast 投屏开关
+  Future<void> setCastEnabled(bool value) async {
+    _castEnabled = value;
+    await _prefs?.setBool(_castEnabledKey, value);
     notifyListeners();
   }
 
@@ -169,7 +169,7 @@ class SettingsProvider extends ChangeNotifier {
     _autoScan = true;
     _skipShortAudio = true;
     _minDuration = 30;
-    _dlnaEnabled = false;
+    _castEnabled = false;
     _sleepTimerEnabled = false;
     _sleepTimerDuration = 30;
     
@@ -178,7 +178,7 @@ class SettingsProvider extends ChangeNotifier {
     await _prefs?.setBool(_autoScanKey, _autoScan);
     await _prefs?.setBool(_skipShortAudioKey, _skipShortAudio);
     await _prefs?.setInt(_minDurationKey, _minDuration);
-    await _prefs?.setBool(_dlnaEnabledKey, _dlnaEnabled);
+    await _prefs?.setBool(_castEnabledKey, _castEnabled);
     await _prefs?.setBool(_sleepTimerEnabledKey, _sleepTimerEnabled);
     await _prefs?.setInt(_sleepTimerDurationKey, _sleepTimerDuration);
     

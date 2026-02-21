@@ -202,14 +202,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 功能设置
           _buildSectionHeader(context, '功能设置'),
           
-          // DLNA 投屏开关
+          // Google Cast 投屏开关
           Consumer<SettingsProvider>(
             builder: (context, settings, child) => SwitchListTile(
-              secondary: Icon(Icons.cast, color: theme.colorScheme.primary),
-              title: const Text('DLNA 投屏'),
-              subtitle: const Text('开启后支持投屏到电视/音箱'),
-              value: settings.dlnaEnabled,
-              onChanged: (value) => settings.setDlnaEnabled(value),
+              secondary: Icon(Icons.cast_connected, color: theme.colorScheme.primary),
+              title: const Text('Google Cast'),
+              subtitle: const Text('开启后支持投屏到 Chromecast/智能音箱'),
+              value: settings.castEnabled,
+              onChanged: (value) => settings.setCastEnabled(value),
             ),
           ),
           

@@ -77,3 +77,7 @@ class Logger {
 void logInfo(String tag, String message) {
   Logger().log(tag, message);
 }
+
+void logError(String tag, String message) {
+  Logger().log(tag, 'ERROR: $message');
+}
