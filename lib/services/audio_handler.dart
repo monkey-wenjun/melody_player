@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
 import '../utils/artwork_generator.dart';
@@ -100,13 +101,32 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     Uri? artUri;
     logInfo('AudioHandler', 'Updating media item: ${song.title}, albumId: ${song.albumId}');
     
+    // 先尝试使用系统媒体库封面，但检查是否真实存在
+    bool hasSystemArtwork = false;
     if (song.albumId != null && song.albumId!.isNotEmpty) {
-      // 使用系统媒体库封面
-      artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
-      logInfo('AudioHandler', 'Using system artwork: $artUri');
-    } else {
-      // 无封面时生成渐变色缩略图
-      logInfo('AudioHandler', 'No albumId, generating gradient artwork...');
+      try {
+        // 查询系统封面是否真的存在
+        final artwork = await OnAudioQuery().queryArtwork(
+          int.parse(song.albumId!),
+          ArtworkType.ALBUM,
+          size: 100,
+          quality: 50,
+        );
+        if (artwork != null && artwork.isNotEmpty) {
+          hasSystemArtwork = true;
+          artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+          logInfo('AudioHandler', 'System artwork exists: $artUri');
+        } else {
+          logInfo('AudioHandler', 'System artwork not found for albumId: ${song.albumId}');
+        }
+      } catch (e) {
+        logError('AudioHandler', 'Error querying artwork: $e');
+      }
+    }
+    
+    // 如果没有系统封面，生成渐变色缩略图
+    if (!hasSystemArtwork) {
+      logInfo('AudioHandler', 'Generating gradient artwork...');
       final artworkUri = await ArtworkGenerator.getArtworkUri(
         song.id,
         title: song.title,
@@ -145,11 +165,28 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     final queueItems = <MediaItem>[];
     for (final song in _songs) {
       Uri? artUri;
+      
+      // 检查系统封面是否真的存在
+      bool hasSystemArtwork = false;
       if (song.albumId != null && song.albumId!.isNotEmpty) {
-        // 使用系统媒体库封面
-        artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
-      } else {
-        // 无封面时生成渐变色缩略图
+        try {
+          final artwork = await OnAudioQuery().queryArtwork(
+            int.parse(song.albumId!),
+            ArtworkType.ALBUM,
+            size: 100,
+            quality: 50,
+          );
+          if (artwork != null && artwork.isNotEmpty) {
+            hasSystemArtwork = true;
+            artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+          }
+        } catch (e) {
+          // 忽略错误，使用生成的封面
+        }
+      }
+      
+      // 如果没有系统封面，生成渐变色缩略图
+      if (!hasSystemArtwork) {
         final artworkUri = await ArtworkGenerator.getArtworkUri(
           song.id,
           title: song.title,
