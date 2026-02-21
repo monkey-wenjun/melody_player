@@ -1,7 +1,7 @@
 name: melody_player
 description: "A beautiful and lightweight music player for Android"
 publish_to: 'none'
-version: 1.9.36+62
+version: 1.9.37+63
 
 environment:
   sdk: ^3.5.4
