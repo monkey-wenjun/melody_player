@@ -75,7 +75,7 @@ class ArtworkGenerator {
     
     // 构建 content:// URI
     // 注意：这里使用 external-cache-path，需要在 file_paths.xml 中配置
-    final uri = 'content://com.melody.melody_player.fileprovider/external_files/$filename';
+    final uri = 'content://com.melody.melody_player.fileprovider/external_cache/$filename';
     
     // 检查内存缓存
     if (_cache.containsKey(cacheKey)) {
