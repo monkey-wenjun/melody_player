@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
@@ -38,6 +37,7 @@ String _getInitial(String? title) {
 }
 
 /// 后台通知栏缩略图生成器
+/// 生成 content:// URI 供 audio_service 使用
 class ArtworkGenerator {
   static final Map<String, String> _cache = {};
   static bool _initialized = false;
@@ -48,31 +48,65 @@ class ArtworkGenerator {
     if (_initialized) return;
     
     try {
-      // 使用外部缓存目录，FileProvider 可以访问
-      final dir = await getExternalCacheDirectories();
-      if (dir != null && dir.isNotEmpty) {
-        _cacheDir = dir.first.path;
+      // 使用应用外部文件目录，这样不需要额外权限
+      final dir = await getExternalStorageDirectory();
+      if (dir != null) {
+        _cacheDir = '${dir.path}/artworks';
       } else {
-        _cacheDir = (await getTemporaryDirectory()).path;
+        final cacheDir = await getExternalCacheDirectories();
+        if (cacheDir != null && cacheDir.isNotEmpty) {
+          _cacheDir = '${cacheDir.first.path}/artworks';
+        } else {
+          _cacheDir = '${(await getTemporaryDirectory()).path}/artworks';
+        }
+      }
+      
+      // 确保目录存在
+      final artworkDir = Directory(_cacheDir!);
+      if (!await artworkDir.exists()) {
+        await artworkDir.create(recursive: true);
       }
       
       _initialized = true;
       print('[ArtworkGenerator] Cache dir: $_cacheDir');
-    } catch (e) {
-      print('[ArtworkGenerator] Init error: $e');
+    } catch (e, stack) {
+      print('[ArtworkGenerator] Init error: $e\n$stack');
     }
   }
   
-  /// 获取或生成缩略图，返回 base64 data URI
-  /// 使用 data URI 避免 FileProvider 权限问题
+  /// 获取或生成缩略图，返回 content:// URI
   static Future<String?> getArtworkUri(String id, {String? title}) async {
     try {
+      await _init();
+      
+      if (_cacheDir == null) {
+        print('[ArtworkGenerator] Cache dir is null');
+        return null;
+      }
+      
       final cacheKey = '${id}_$title';
+      final filename = 'artwork_${id.hashCode}.png';
+      final filepath = '$_cacheDir/$filename';
+      
+      // 构建 content:// URI - 使用 external-files-path
+      final uri = 'content://com.melody.melody_player.fileprovider/external_files/artworks/$filename';
       
       // 检查内存缓存
       if (_cache.containsKey(cacheKey)) {
-        print('[ArtworkGenerator] Using memory cache');
-        return _cache[cacheKey];
+        final file = File(filepath);
+        if (await file.exists()) {
+          print('[ArtworkGenerator] Using cached: $uri');
+          return uri;
+        }
+      }
+      
+      // 检查文件是否已存在
+      final file = File(filepath);
+      if (await file.exists()) {
+        final size = await file.length();
+        print('[ArtworkGenerator] File exists: $filepath ($size bytes)');
+        _cache[cacheKey] = uri;
+        return uri;
       }
       
       // 生成图片
@@ -83,14 +117,20 @@ class ArtworkGenerator {
         return null;
       }
       
-      // 转换为 base64 data URI
-      final base64 = base64Encode(bytes);
-      final dataUri = 'data:image/png;base64,$base64';
+      // 保存到缓存目录
+      await file.writeAsBytes(bytes);
+      final savedSize = await file.length();
+      print('[ArtworkGenerator] Saved: $filepath ($savedSize bytes)');
       
-      print('[ArtworkGenerator] Generated data URI: ${dataUri.substring(0, 50)}... (${bytes.length} bytes)');
-      _cache[cacheKey] = dataUri;
-      
-      return dataUri;
+      // 验证文件
+      if (await file.exists()) {
+        print('[ArtworkGenerator] File verified, returning URI: $uri');
+        _cache[cacheKey] = uri;
+        return uri;
+      } else {
+        print('[ArtworkGenerator] File save failed!');
+        return null;
+      }
     } catch (e, stack) {
       print('[ArtworkGenerator] Error: $e\n$stack');
       return null;
@@ -101,7 +141,6 @@ class ArtworkGenerator {
   static Future<Uint8List?> _generateArtwork(String id, String? title) async {
     try {
       final colors = _getGradientColors(id);
-      final initial = _getInitial(title);
       
       const width = 512;
       const height = 512;
@@ -144,7 +183,6 @@ class ArtworkGenerator {
           final dy = y - centerY;
           if (dx * dx + dy * dy <= radius * radius) {
             final pixel = image.getPixel(x, y);
-            // 半透明白色叠加
             final alpha = 0.25;
             final r = (pixel.r * (1 - alpha) + 255 * alpha).toInt();
             final g = (pixel.g * (1 - alpha) + 255 * alpha).toInt();
@@ -156,6 +194,7 @@ class ArtworkGenerator {
       
       // 编码为 PNG
       final png = img.encodePng(image);
+      print('[ArtworkGenerator] Generated PNG: ${png.length} bytes');
       return Uint8List.fromList(png);
     } catch (e, stack) {
       print('[ArtworkGenerator] Generate error: $e\n$stack');

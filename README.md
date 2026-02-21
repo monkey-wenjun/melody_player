@@ -195,7 +195,8 @@ build/app/outputs/flutter-apk/app-release.apk
 ## 🚀 更新日志
 
 ### v1.9.39 (2026-02-20)
-- 🔧 使用 base64 data URI 替代 content:// URI，避免 FileProvider 权限问题
+- 🔧 修复后台通知栏缩略图 - 改回 content:// URI 方案，使用 external-files-path
+- 🔧 修复 data URI 不被 audio_service 支持的问题
 
 ### v1.9.38 (2026-02-20)
 - 🔧 修复后台通知栏缩略图生成 - 使用纯 Dart `image` 库替代 `dart:ui`，解决后台 isolate 无法使用 Flutter UI 的问题
