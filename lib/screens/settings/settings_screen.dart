@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
@@ -44,8 +45,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('设置'),
       ),
-      body: ListView(
-        children: [
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.06),
+              theme.colorScheme.secondary.withOpacity(0.04),
+              theme.colorScheme.tertiary.withOpacity(0.02),
+            ],
+          ),
+        ),
+        child: ListView(
+          children: [
           // 主题设置
           _buildSectionHeader(context, '外观'),
           Consumer<SettingsProvider>(
@@ -312,7 +325,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 32),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {
@@ -634,6 +648,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
         ),
       ],
-    );
+      ),
+      ),
+  );
   }
 }

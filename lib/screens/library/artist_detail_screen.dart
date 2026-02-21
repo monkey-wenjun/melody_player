@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -107,8 +108,20 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.06),
+              theme.colorScheme.secondary.withOpacity(0.04),
+              theme.colorScheme.tertiary.withOpacity(0.02),
+            ],
+          ),
+        ),
+        child: CustomScrollView(
+          slivers: [
           // 顶部应用栏
           SliverAppBar(
             expandedHeight: 280,
@@ -368,6 +381,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                       },
                     ),
         ],
+        ),
       ),
     );
   }

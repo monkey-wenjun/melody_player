@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/song.dart';
@@ -127,8 +128,20 @@ class _QuickAccessSongsScreenState extends State<QuickAccessSongsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.06),
+              theme.colorScheme.secondary.withOpacity(0.04),
+              theme.colorScheme.tertiary.withOpacity(0.02),
+            ],
+          ),
+        ),
+        child: CustomScrollView(
+          slivers: [
           // 顶部标题区域
           SliverAppBar(
             expandedHeight: 200,
@@ -274,6 +287,7 @@ class _QuickAccessSongsScreenState extends State<QuickAccessSongsScreen> {
                       ),
                     ),
         ],
+        ),
       ),
     );
   }

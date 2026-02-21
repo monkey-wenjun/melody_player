@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -80,10 +81,22 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
           ],
         ) : null,
       ),
-      body: Column(
-        children: [
-          // 扫描路径提示
-          Consumer2<LibraryProvider, SettingsProvider>(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.06),
+              theme.colorScheme.secondary.withOpacity(0.04),
+              theme.colorScheme.tertiary.withOpacity(0.02),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            // 扫描路径提示
+            Consumer2<LibraryProvider, SettingsProvider>(
             builder: (context, library, settings, child) {
               if (library.isLoading) return const SizedBox.shrink();
               
@@ -195,6 +208,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
             ),
           ),
         ],
+      ),
       ),
     );
   }

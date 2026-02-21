@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/song.dart';
@@ -53,6 +54,7 @@ class PlaylistsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('歌单'),
@@ -63,7 +65,19 @@ class PlaylistsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<PlaylistProvider>(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.06),
+              theme.colorScheme.secondary.withOpacity(0.04),
+              theme.colorScheme.tertiary.withOpacity(0.02),
+            ],
+          ),
+        ),
+        child: Consumer<PlaylistProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -141,6 +155,7 @@ class PlaylistsScreen extends StatelessWidget {
             ],
           );
         },
+      ),
       ),
     );
   }
