@@ -3,6 +3,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
+import '../utils/artwork_generator.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
@@ -95,15 +96,22 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     final song = _songs[_currentIndex];
     
-    // 构建专辑封面 URI - 只使用系统媒体库的封面
-    // 系统通知栏只支持 content://media/ 格式的图片
+    // 构建专辑封面 URI
     Uri? artUri;
     if (song.albumId != null && song.albumId!.isNotEmpty) {
+      // 使用系统媒体库封面
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       print('[AudioHandler] Using system artwork: $artUri');
     } else {
-      // 无封面时不设置 artUri，系统会显示默认音乐图标
-      print('[AudioHandler] No albumId, using default system icon');
+      // 无封面时生成渐变色缩略图
+      final artworkUri = await ArtworkGenerator.getArtworkUri(
+        song.id,
+        title: song.title,
+      );
+      if (artworkUri != null) {
+        artUri = Uri.parse(artworkUri);
+        print('[AudioHandler] Using generated artwork: $artworkUri');
+      }
     }
     
     final mediaItem = MediaItem(
@@ -131,10 +139,19 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     // 构建队列
     final queueItems = <MediaItem>[];
     for (final song in _songs) {
-      // 只使用系统媒体库封面，无封面时不设置 artUri
       Uri? artUri;
       if (song.albumId != null && song.albumId!.isNotEmpty) {
+        // 使用系统媒体库封面
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+      } else {
+        // 无封面时生成渐变色缩略图
+        final artworkUri = await ArtworkGenerator.getArtworkUri(
+          song.id,
+          title: song.title,
+        );
+        if (artworkUri != null) {
+          artUri = Uri.parse(artworkUri);
+        }
       }
       
       queueItems.add(MediaItem(

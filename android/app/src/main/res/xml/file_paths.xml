@@ -4,10 +4,10 @@
     <external-path name="download" path="Download/" />
     <!-- 应用外部存储 -->
     <external-files-path name="external_files" path="." />
+    <!-- 应用外部缓存目录 (用于通知栏缩略图) -->
+    <external-cache-path name="external_cache" path="." />
     <!-- 应用缓存目录 -->
     <cache-path name="cache" path="." />
     <!-- 应用文件目录 -->
     <files-path name="files" path="." />
-    <!-- artworks 子目录 (用于通知栏缩略图) -->
-    <files-path name="artworks" path="artworks/" />
 </paths>
