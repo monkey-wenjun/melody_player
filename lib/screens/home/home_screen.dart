@@ -201,81 +201,86 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary.withOpacity(0.06),
-            theme.colorScheme.secondary.withOpacity(0.04),
-            theme.colorScheme.tertiary.withOpacity(0.02),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 搜索栏
-                  InkWell(
-                    onTap: () {
-                      _navigateToLibrarySearch();
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.search,
-                            color: theme.iconTheme.color?.withOpacity(0.6),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '搜索音乐...',
-                            style: TextStyle(
-                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // 快捷入口
-                  _buildSectionTitle(context, '快捷入口'),
-                  const SizedBox(height: 12),
-                  _buildQuickAccess(context),
-                  const SizedBox(height: 24),
-                  
-                  // 最近播放
-                  _buildSectionTitle(context, '最近播放'),
-                  const SizedBox(height: 12),
-                  const RecentSongsList(),
-                  const SizedBox(height: 24),
-                  
-                  // 随机推荐
-                  _buildSectionTitle(context, '发现'),
-                  const SizedBox(height: 12),
-                  _buildDiscoverSection(context),
-                ],
-              ),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.primary.withOpacity(0.12),
+                theme.colorScheme.secondary.withOpacity(0.08),
+                theme.colorScheme.tertiary.withOpacity(0.04),
+              ],
             ),
           ),
-        ],
-      ),
+          child: SafeArea(
+            child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 搜索栏
+                      InkWell(
+                        onTap: () {
+                          _navigateToLibrarySearch();
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 12),
+                              Icon(
+                                Icons.search,
+                                color: theme.iconTheme.color?.withOpacity(0.6),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '搜索音乐...',
+                                style: TextStyle(
+                                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // 快捷入口
+                      _buildSectionTitle(context, '快捷入口'),
+                      const SizedBox(height: 12),
+                      _buildQuickAccess(context),
+                      const SizedBox(height: 24),
+                      
+                      // 最近播放
+                      _buildSectionTitle(context, '最近播放'),
+                      const SizedBox(height: 12),
+                      const RecentSongsList(),
+                      const SizedBox(height: 24),
+                      
+                      // 随机推荐
+                      _buildSectionTitle(context, '发现'),
+                      const SizedBox(height: 12),
+                      _buildDiscoverSection(context),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ),
+        ),
       ),
     );
   }

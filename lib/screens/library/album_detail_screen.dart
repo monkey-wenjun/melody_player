@@ -74,192 +74,197 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
-            ],
-          ),
-        ),
-        child: CustomScrollView(
-          slivers: [
-          // 顶部应用栏
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      theme.colorScheme.primary.withOpacity(0.3),
-                      theme.colorScheme.surface,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 64),
-                    Hero(
-                      tag: 'album_${widget.album.id}',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: AlbumArt(
-                          id: widget.album.id,
-                          type: ArtworkType.ALBUM,
-                          size: 160,
-                          borderRadius: 0,
-                          title: widget.album.title,
-                          artist: widget.album.artist,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        widget.album.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.album.artist,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: theme.textTheme.bodyMedium?.color,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${widget.album.numberOfSongs} 首歌曲',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.textTheme.bodySmall?.color,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 播放控制按钮
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _songs.isEmpty ? null : () => _playAllSongs(),
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('播放全部'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _songs.isEmpty ? null : _shufflePlay,
-                      icon: const Icon(Icons.shuffle),
-                      label: const Text('随机播放'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
                 ],
               ),
             ),
-          ),
+            child: CustomScrollView(
+              slivers: [
+              // 顶部应用栏
+              SliverAppBar(
+                expandedHeight: 300,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          theme.colorScheme.primary.withOpacity(0.3),
+                          theme.colorScheme.surface,
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 64),
+                        Hero(
+                          tag: 'album_${widget.album.id}',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: AlbumArt(
+                              id: widget.album.id,
+                              type: ArtworkType.ALBUM,
+                              size: 160,
+                              borderRadius: 0,
+                              title: widget.album.title,
+                              artist: widget.album.artist,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            widget.album.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.album.artist,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.album.numberOfSongs} 首歌曲',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.textTheme.bodySmall?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
-          // 歌曲列表
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              : _songs.isEmpty
-                  ? SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.music_off,
-                              size: 64,
-                              color: theme.disabledColor,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              '没有歌曲',
-                              style: TextStyle(color: theme.disabledColor),
-                            ),
-                          ],
+              // 播放控制按钮
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _songs.isEmpty ? null : () => _playAllSongs(),
+                          icon: const Icon(Icons.play_arrow),
+                          label: const Text('播放全部'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
-                    )
-                  : SliverList.builder(
-                      itemCount: _songs.length,
-                      itemBuilder: (context, index) {
-                        final song = _songs[index];
-                        final player = context.watch<PlayerProvider>();
-                        final isPlaying =
-                            player.currentSong?.id == song.id && player.isPlaying;
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _songs.isEmpty ? null : _shufflePlay,
+                          icon: const Icon(Icons.shuffle),
+                          label: const Text('随机播放'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
-                        return SongListItem(
-                          song: song,
-                          isPlaying: isPlaying,
-                          onTap: () => _playAllSongs(initialIndex: index),
-                          onToggleFavorite: () async {
-                            final playlistProvider =
-                                context.read<PlaylistProvider>();
-                            await playlistProvider.toggleFavorite(song);
-                            final isFav =
-                                playlistProvider.favorites.any((s) => s.id == song.id);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text(isFav ? '已添加到收藏' : '已取消收藏'),
-                                  duration: const Duration(seconds: 1),
+              // 歌曲列表
+              _isLoading
+                  ? const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _songs.isEmpty
+                      ? SliverFillRemaining(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.music_off,
+                                  size: 64,
+                                  color: theme.disabledColor,
                                 ),
-                              );
-                            }
-                          },
-                          onAddToPlaylist: () {
-                            showAddToPlaylistDialog(context, song);
-                          },
-                          onPlayNext: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('已添加到下一首播放'),
-                                duration: Duration(seconds: 1),
-                              ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '没有歌曲',
+                                  style: TextStyle(color: theme.disabledColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : SliverList.builder(
+                          itemCount: _songs.length,
+                          itemBuilder: (context, index) {
+                            final song = _songs[index];
+                            final player = context.watch<PlayerProvider>();
+                            final isPlaying =
+                                player.currentSong?.id == song.id && player.isPlaying;
+
+                            return SongListItem(
+                              song: song,
+                              isPlaying: isPlaying,
+                              onTap: () => _playAllSongs(initialIndex: index),
+                              onToggleFavorite: () async {
+                                final playlistProvider =
+                                    context.read<PlaylistProvider>();
+                                await playlistProvider.toggleFavorite(song);
+                                final isFav =
+                                    playlistProvider.favorites.any((s) => s.id == song.id);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                          Text(isFav ? '已添加到收藏' : '已取消收藏'),
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+                              },
+                              onAddToPlaylist: () {
+                                showAddToPlaylistDialog(context, song);
+                              },
+                              onPlayNext: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('已添加到下一首播放'),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
-        ],
+                        ),
+            ],
+            ),
+          ),
         ),
       ),
     );

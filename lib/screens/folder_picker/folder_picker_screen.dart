@@ -278,19 +278,24 @@ class _FolderPickerScreenState extends State<FolderPickerScreen> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
-            ],
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
+                ],
+              ),
+            ),
+            child: _buildBody(),
           ),
         ),
-        child: _buildBody(),
       ),
     );
   }

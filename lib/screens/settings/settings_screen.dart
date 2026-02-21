@@ -45,285 +45,290 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('设置'),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
+                ],
+              ),
+            ),
+            child: ListView(
+              children: [
+              // 主题设置
+              _buildSectionHeader(context, '外观'),
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  String themeText;
+                  IconData themeIcon;
+                  
+                  switch (settings.theme) {
+                    case AppTheme.light:
+                      themeText = '浅色模式';
+                      themeIcon = Icons.light_mode;
+                      break;
+                    case AppTheme.dark:
+                      themeText = '深色模式';
+                      themeIcon = Icons.dark_mode;
+                      break;
+                    case AppTheme.system:
+                      themeText = '跟随系统';
+                      themeIcon = Icons.brightness_auto;
+                      break;
+                  }
+
+                  return ListTile(
+                    leading: Icon(themeIcon, color: theme.colorScheme.primary),
+                    title: const Text('主题'),
+                    subtitle: Text(themeText),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showThemeDialog(context),
+                  );
+                },
+              ),
+
+              const Divider(),
+
+              // 音乐库设置
+              _buildSectionHeader(context, '音乐库扫描'),
+              
+              // 扫描方式选择
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                settings.hasCustomScanPaths 
+                                    ? Icons.folder 
+                                    : Icons.library_music,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      settings.hasCustomScanPaths 
+                                          ? '自定义目录' 
+                                          : '扫描所有音乐',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      settings.hasCustomScanPaths
+                                          ? '已选择 ${settings.scanPaths.length} 个目录'
+                                          : '自动扫描设备中的所有音乐文件',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme.textTheme.bodySmall?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _showScanOptions(context),
+                                  icon: const Icon(Icons.edit),
+                                  label: Text(
+                                    settings.hasCustomScanPaths 
+                                        ? '修改目录' 
+                                        : '选择目录'
+                                  ),
+                                ),
+                              ),
+                              if (settings.hasCustomScanPaths) ...[
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  onPressed: () => _resetToAllMusic(context),
+                                  icon: const Icon(Icons.restore),
+                                  label: const Text('恢复默认'),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // 过滤设置
+              _buildSectionHeader(context, '过滤设置'),
+              
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) => Column(
+                  children: [
+                    SwitchListTile(
+                      secondary: Icon(Icons.timer, color: theme.colorScheme.primary),
+                      title: const Text('过滤短音频'),
+                      subtitle: Text('隐藏小于 ${settings.minDuration} 秒的音频（如铃声）'),
+                      value: settings.skipShortAudio,
+                      onChanged: (value) => settings.setSkipShortAudio(value),
+                    ),
+                    if (settings.skipShortAudio)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Text('${settings.minDuration}秒'),
+                            Expanded(
+                              child: Slider(
+                                value: settings.minDuration.toDouble(),
+                                min: 10,
+                                max: 120,
+                                divisions: 11,
+                                label: '${settings.minDuration}秒',
+                                onChanged: (value) => settings.setMinDuration(value.round()),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+
+              // 功能设置
+              _buildSectionHeader(context, '功能设置'),
+              
+              // Google Cast 投屏开关
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) => SwitchListTile(
+                  secondary: Icon(Icons.cast_connected, color: theme.colorScheme.primary),
+                  title: const Text('Google Cast'),
+                  subtitle: const Text('开启后支持投屏到 Chromecast/智能音箱'),
+                  value: settings.castEnabled,
+                  onChanged: (value) => settings.setCastEnabled(value),
+                ),
+              ),
+              
+              // 定时播放
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) => Column(
+                  children: [
+                    SwitchListTile(
+                      secondary: Icon(Icons.timer, color: theme.colorScheme.primary),
+                      title: const Text('定时播放'),
+                      subtitle: Text(settings.sleepTimerEnabled 
+                        ? '${settings.sleepTimerDuration} 分钟后自动停止'
+                        : '自动停止播放'),
+                      value: settings.sleepTimerEnabled,
+                      onChanged: (value) {
+                        settings.setSleepTimerEnabled(value);
+                        if (value) {
+                          _showSleepTimerDialog(context, settings);
+                        }
+                      },
+                    ),
+                    if (settings.sleepTimerEnabled)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            const Text('15分钟'),
+                            Expanded(
+                              child: Slider(
+                                value: settings.sleepTimerDuration.toDouble(),
+                                min: 15,
+                                max: 120,
+                                divisions: 7,
+                                label: '${settings.sleepTimerDuration}分钟',
+                                onChanged: (value) {
+                                  settings.setSleepTimerDuration(value.round());
+                                },
+                              ),
+                            ),
+                            const Text('120分钟'),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+
+              // 调试
+              _buildSectionHeader(context, '调试'),
+              ListTile(
+                leading: Icon(Icons.bug_report, color: theme.colorScheme.primary),
+                title: const Text('导出日志'),
+                subtitle: const Text('分享日志文件用于排查问题'),
+                trailing: const Icon(Icons.share),
+                onTap: () => _exportLog(context),
+              ),
+
+              const Divider(),
+
+              // 关于
+              _buildSectionHeader(context, '关于'),
+              ListTile(
+                leading: Icon(Icons.info_outline, color: theme.colorScheme.primary),
+                title: const Text('关于悦音'),
+                subtitle: const Text(AppConstants.appDescription),
+                onTap: () => _showAboutDialog(context),
+              ),
+              
+              // 版本号（点击检查更新）
+              ListTile(
+                leading: Icon(
+                  Icons.system_update_alt,
+                  color: theme.colorScheme.primary,
+                ),
+                title: const Text('版本'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('v${AppConstants.appVersion}'),
+                    const SizedBox(height: 2),
+                    Text(
+                      '点击检查更新',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                trailing: Icon(
+                  Icons.touch_app,
+                  size: 20,
+                  color: theme.colorScheme.primary.withOpacity(0.5),
+                ),
+                onTap: _manualCheckUpdate,
+              ),
+
+              const SizedBox(height: 32),
             ],
           ),
         ),
-        child: ListView(
-          children: [
-          // 主题设置
-          _buildSectionHeader(context, '外观'),
-          Consumer<SettingsProvider>(
-            builder: (context, settings, child) {
-              String themeText;
-              IconData themeIcon;
-              
-              switch (settings.theme) {
-                case AppTheme.light:
-                  themeText = '浅色模式';
-                  themeIcon = Icons.light_mode;
-                  break;
-                case AppTheme.dark:
-                  themeText = '深色模式';
-                  themeIcon = Icons.dark_mode;
-                  break;
-                case AppTheme.system:
-                  themeText = '跟随系统';
-                  themeIcon = Icons.brightness_auto;
-                  break;
-              }
-
-              return ListTile(
-                leading: Icon(themeIcon, color: theme.colorScheme.primary),
-                title: const Text('主题'),
-                subtitle: Text(themeText),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showThemeDialog(context),
-              );
-            },
-          ),
-
-          const Divider(),
-
-          // 音乐库设置
-          _buildSectionHeader(context, '音乐库扫描'),
-          
-          // 扫描方式选择
-          Consumer<SettingsProvider>(
-            builder: (context, settings, child) {
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            settings.hasCustomScanPaths 
-                                ? Icons.folder 
-                                : Icons.library_music,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  settings.hasCustomScanPaths 
-                                      ? '自定义目录' 
-                                      : '扫描所有音乐',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  settings.hasCustomScanPaths
-                                      ? '已选择 ${settings.scanPaths.length} 个目录'
-                                      : '自动扫描设备中的所有音乐文件',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: theme.textTheme.bodySmall?.color,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _showScanOptions(context),
-                              icon: const Icon(Icons.edit),
-                              label: Text(
-                                settings.hasCustomScanPaths 
-                                    ? '修改目录' 
-                                    : '选择目录'
-                              ),
-                            ),
-                          ),
-                          if (settings.hasCustomScanPaths) ...[
-                            const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: () => _resetToAllMusic(context),
-                              icon: const Icon(Icons.restore),
-                              label: const Text('恢复默认'),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-
-          // 过滤设置
-          _buildSectionHeader(context, '过滤设置'),
-          
-          Consumer<SettingsProvider>(
-            builder: (context, settings, child) => Column(
-              children: [
-                SwitchListTile(
-                  secondary: Icon(Icons.timer, color: theme.colorScheme.primary),
-                  title: const Text('过滤短音频'),
-                  subtitle: Text('隐藏小于 ${settings.minDuration} 秒的音频（如铃声）'),
-                  value: settings.skipShortAudio,
-                  onChanged: (value) => settings.setSkipShortAudio(value),
-                ),
-                if (settings.skipShortAudio)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Text('${settings.minDuration}秒'),
-                        Expanded(
-                          child: Slider(
-                            value: settings.minDuration.toDouble(),
-                            min: 10,
-                            max: 120,
-                            divisions: 11,
-                            label: '${settings.minDuration}秒',
-                            onChanged: (value) => settings.setMinDuration(value.round()),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          const Divider(),
-
-          // 功能设置
-          _buildSectionHeader(context, '功能设置'),
-          
-          // Google Cast 投屏开关
-          Consumer<SettingsProvider>(
-            builder: (context, settings, child) => SwitchListTile(
-              secondary: Icon(Icons.cast_connected, color: theme.colorScheme.primary),
-              title: const Text('Google Cast'),
-              subtitle: const Text('开启后支持投屏到 Chromecast/智能音箱'),
-              value: settings.castEnabled,
-              onChanged: (value) => settings.setCastEnabled(value),
-            ),
-          ),
-          
-          // 定时播放
-          Consumer<SettingsProvider>(
-            builder: (context, settings, child) => Column(
-              children: [
-                SwitchListTile(
-                  secondary: Icon(Icons.timer, color: theme.colorScheme.primary),
-                  title: const Text('定时播放'),
-                  subtitle: Text(settings.sleepTimerEnabled 
-                    ? '${settings.sleepTimerDuration} 分钟后自动停止'
-                    : '自动停止播放'),
-                  value: settings.sleepTimerEnabled,
-                  onChanged: (value) {
-                    settings.setSleepTimerEnabled(value);
-                    if (value) {
-                      _showSleepTimerDialog(context, settings);
-                    }
-                  },
-                ),
-                if (settings.sleepTimerEnabled)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        const Text('15分钟'),
-                        Expanded(
-                          child: Slider(
-                            value: settings.sleepTimerDuration.toDouble(),
-                            min: 15,
-                            max: 120,
-                            divisions: 7,
-                            label: '${settings.sleepTimerDuration}分钟',
-                            onChanged: (value) {
-                              settings.setSleepTimerDuration(value.round());
-                            },
-                          ),
-                        ),
-                        const Text('120分钟'),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          const Divider(),
-
-          // 调试
-          _buildSectionHeader(context, '调试'),
-          ListTile(
-            leading: Icon(Icons.bug_report, color: theme.colorScheme.primary),
-            title: const Text('导出日志'),
-            subtitle: const Text('分享日志文件用于排查问题'),
-            trailing: const Icon(Icons.share),
-            onTap: () => _exportLog(context),
-          ),
-
-          const Divider(),
-
-          // 关于
-          _buildSectionHeader(context, '关于'),
-          ListTile(
-            leading: Icon(Icons.info_outline, color: theme.colorScheme.primary),
-            title: const Text('关于悦音'),
-            subtitle: const Text(AppConstants.appDescription),
-            onTap: () => _showAboutDialog(context),
-          ),
-          
-          // 版本号（点击检查更新）
-          ListTile(
-            leading: Icon(
-              Icons.system_update_alt,
-              color: theme.colorScheme.primary,
-            ),
-            title: const Text('版本'),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('v${AppConstants.appVersion}'),
-                const SizedBox(height: 2),
-                Text(
-                  '点击检查更新',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-            trailing: Icon(
-              Icons.touch_app,
-              size: 20,
-              color: theme.colorScheme.primary.withOpacity(0.5),
-            ),
-            onTap: _manualCheckUpdate,
-          ),
-
-          const SizedBox(height: 32),
-        ],
       ),
     ),
   );

@@ -128,165 +128,170 @@ class _QuickAccessSongsScreenState extends State<QuickAccessSongsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
-            ],
-          ),
-        ),
-        child: CustomScrollView(
-          slivers: [
-          // 顶部标题区域
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      _color.withOpacity(0.8),
-                      _color.withOpacity(0.4),
-                    ],
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
-                      Icon(_icon, size: 64, color: Colors.white),
-                      const SizedBox(height: 16),
-                      Text(
-                        _title,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${_songs.length} 首歌曲',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
+                ],
               ),
             ),
-          ),
-
-          // 操作按钮
-          if (_songs.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _playAll,
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('播放全部'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          foregroundColor: theme.colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
+            child: CustomScrollView(
+              slivers: [
+              // 顶部标题区域
+              SliverAppBar(
+                expandedHeight: 200,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _color.withOpacity(0.8),
+                          _color.withOpacity(0.4),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _shufflePlay,
-                        icon: const Icon(Icons.shuffle),
-                        label: const Text('随机播放'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // 歌曲列表
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              : _songs.isEmpty
-                  ? SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(_icon, size: 64, color: theme.disabledColor),
-                            const SizedBox(height: 16),
-                            Text(
-                              '暂无歌曲',
-                              style: theme.textTheme.titleMedium,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 40),
+                          Icon(_icon, size: 64, color: Colors.white),
+                          const SizedBox(height: 16),
+                          Text(
+                            _title,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final song = _songs[index];
-                          final playlistProvider = context.read<PlaylistProvider>();
-                          return SongListItem(
-                            song: song,
-                            onTap: () {
-                              context.read<PlayerProvider>().playSong(
-                                song,
-                                queue: _songs,
-                              );
-                            },
-                            onToggleFavorite: () async {
-                              await playlistProvider.toggleFavorite(song);
-                              final isFav = playlistProvider.favorites.any((s) => s.id == song.id);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(isFav ? '已添加到收藏' : '已取消收藏'),
-                                    duration: const Duration(seconds: 1),
-                                  ),
-                                );
-                              }
-                            },
-                            onAddToPlaylist: () {
-                              showAddToPlaylistDialog(context, song);
-                            },
-                            onPlayNext: () {
-                              // TODO: 实现添加到播放队列功能
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('已添加到下一首播放'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        childCount: _songs.length,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${_songs.length} 首歌曲',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-        ],
+                  ),
+                ),
+              ),
+
+              // 操作按钮
+              if (_songs.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _playAll,
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('播放全部'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _shufflePlay,
+                            icon: const Icon(Icons.shuffle),
+                            label: const Text('随机播放'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 歌曲列表
+              _isLoading
+                  ? const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _songs.isEmpty
+                      ? SliverFillRemaining(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(_icon, size: 64, color: theme.disabledColor),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '暂无歌曲',
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final song = _songs[index];
+                              final playlistProvider = context.read<PlaylistProvider>();
+                              return SongListItem(
+                                song: song,
+                                onTap: () {
+                                  context.read<PlayerProvider>().playSong(
+                                    song,
+                                    queue: _songs,
+                                  );
+                                },
+                                onToggleFavorite: () async {
+                                  await playlistProvider.toggleFavorite(song);
+                                  final isFav = playlistProvider.favorites.any((s) => s.id == song.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(isFav ? '已添加到收藏' : '已取消收藏'),
+                                        duration: const Duration(seconds: 1),
+                                      ),
+                                    );
+                                  }
+                                },
+                                onAddToPlaylist: () {
+                                  showAddToPlaylistDialog(context, song);
+                                },
+                                onPlayNext: () {
+                                  // TODO: 实现添加到播放队列功能
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('已添加到下一首播放'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            childCount: _songs.length,
+                          ),
+                        ),
+            ],
+            ),
+          ),
         ),
       ),
     );

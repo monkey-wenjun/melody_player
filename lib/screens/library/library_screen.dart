@@ -81,136 +81,141 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
           ],
         ) : null,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            // 扫描路径提示
-            Consumer2<LibraryProvider, SettingsProvider>(
-            builder: (context, library, settings, child) {
-              if (library.isLoading) return const SizedBox.shrink();
-              
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      settings.hasCustomScanPaths ? Icons.folder : Icons.music_note,
-                      size: 16,
-                      color: theme.colorScheme.primary,
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
+                ],
+              ),
+            ),
+            child: Column(
+              children: [
+                // 扫描路径提示
+                Consumer2<LibraryProvider, SettingsProvider>(
+                builder: (context, library, settings, child) {
+                  if (library.isLoading) return const SizedBox.shrink();
+                  
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        settings.hasCustomScanPaths
-                            ? '自定义目录: ${settings.scanPaths.length} 个位置'
-                            : '扫描所有音乐文件（不含通话录音等）',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.colorScheme.primary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (settings.hasCustomScanPaths)
-                      GestureDetector(
-                        onTap: () => _clearCustomPaths(),
-                        child: Icon(
-                          Icons.clear,
+                    child: Row(
+                      children: [
+                        Icon(
+                          settings.hasCustomScanPaths ? Icons.folder : Icons.music_note,
                           size: 16,
                           color: theme.colorScheme.primary,
                         ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          // 搜索栏
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '搜索...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          context.read<LibraryProvider>().clearSearch();
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: theme.colorScheme.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              onChanged: (value) => context.read<LibraryProvider>().setSearchQuery(value),
-            ),
-          ),
-          
-          // 内容区域
-          Expanded(
-            child: Consumer<LibraryProvider>(
-              builder: (context, library, child) {
-                if (library.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (library.error != null) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-                        const SizedBox(height: 16),
-                        Text(library.error!),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => library.checkPermissionAndScan(),
-                          child: const Text('重试'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            settings.hasCustomScanPaths
+                                ? '自定义目录: ${settings.scanPaths.length} 个位置'
+                                : '扫描所有音乐文件（不含通话录音等）',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.primary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        if (settings.hasCustomScanPaths)
+                          GestureDetector(
+                            onTap: () => _clearCustomPaths(),
+                            child: Icon(
+                              Icons.clear,
+                              size: 16,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
                       ],
                     ),
                   );
-                }
+                },
+              ),
 
-                return _tabController != null ? TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _SongsTab(songs: library.songs),
-                    _AlbumsTab(albums: library.albums),
-                    _ArtistsTab(artists: library.artists),
-                  ],
-                ) : const Center(child: CircularProgressIndicator());
-              },
-            ),
+              // 搜索栏
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: '搜索...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              context.read<LibraryProvider>().clearSearch();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (value) => context.read<LibraryProvider>().setSearchQuery(value),
+                ),
+              ),
+              
+              // 内容区域
+              Expanded(
+                child: Consumer<LibraryProvider>(
+                  builder: (context, library, child) {
+                    if (library.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (library.error != null) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
+                            const SizedBox(height: 16),
+                            Text(library.error!),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () => library.checkPermissionAndScan(),
+                              child: const Text('重试'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return _tabController != null ? TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _SongsTab(songs: library.songs),
+                        _AlbumsTab(albums: library.albums),
+                        _ArtistsTab(artists: library.artists),
+                      ],
+                    ) : const Center(child: CircularProgressIndicator());
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      ),
-    );
+    ),
+  );
   }
 
   void _showFolderOptions() {

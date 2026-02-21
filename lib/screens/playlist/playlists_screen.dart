@@ -65,97 +65,102 @@ class PlaylistsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.06),
-              theme.colorScheme.secondary.withOpacity(0.04),
-              theme.colorScheme.tertiary.withOpacity(0.02),
-            ],
+      body: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.12),
+                  theme.colorScheme.secondary.withOpacity(0.08),
+                  theme.colorScheme.tertiary.withOpacity(0.04),
+                ],
+              ),
+            ),
+            child: Consumer<PlaylistProvider>(
+            builder: (context, provider, child) {
+              if (provider.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return ListView(
+                children: [
+                  // 收藏
+                  _buildSectionHeader(context, '我的收藏'),
+                  ListTile(
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.red, Colors.pink],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.favorite, color: Colors.white),
+                    ),
+                    title: const Text('我喜欢的音乐'),
+                    subtitle: Text('${provider.favorites.length} 首歌曲'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showFavoriteSongs(context),
+                  ),
+                  
+                  const Divider(),
+                  
+                  // 自定义歌单
+                  _buildSectionHeader(context, '我的歌单'),
+                  if (provider.playlists.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: Text('还没有歌单，点击右上角创建')),
+                    )
+                  else
+                    ...provider.playlists.map((playlist) => ListTile(
+                      leading: PlaylistCover(playlist: playlist),
+                      title: Text(playlist.name),
+                      subtitle: Text('${playlist.songCount} 首歌曲'),
+                      trailing: PopupMenuButton(
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'rename',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 20),
+                                SizedBox(width: 8),
+                                Text('重命名'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 20, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('删除', style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          if (value == 'rename') {
+                            _showRenameDialog(context, playlist.id, playlist.name);
+                          } else if (value == 'delete') {
+                            _showDeleteConfirm(context, playlist.id, playlist.name);
+                          }
+                        },
+                      ),
+                      onTap: () => _showPlaylistDetail(context, playlist.id),
+                    )),
+                ],
+              );
+            },
+          ),
           ),
         ),
-        child: Consumer<PlaylistProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return ListView(
-            children: [
-              // 收藏
-              _buildSectionHeader(context, '我的收藏'),
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Colors.red, Colors.pink],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.favorite, color: Colors.white),
-                ),
-                title: const Text('我喜欢的音乐'),
-                subtitle: Text('${provider.favorites.length} 首歌曲'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showFavoriteSongs(context),
-              ),
-              
-              const Divider(),
-              
-              // 自定义歌单
-              _buildSectionHeader(context, '我的歌单'),
-              if (provider.playlists.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: Text('还没有歌单，点击右上角创建')),
-                )
-              else
-                ...provider.playlists.map((playlist) => ListTile(
-                  leading: PlaylistCover(playlist: playlist),
-                  title: Text(playlist.name),
-                  subtitle: Text('${playlist.songCount} 首歌曲'),
-                  trailing: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'rename',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 20),
-                            SizedBox(width: 8),
-                            Text('重命名'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 20, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('删除', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      if (value == 'rename') {
-                        _showRenameDialog(context, playlist.id, playlist.name);
-                      } else if (value == 'delete') {
-                        _showDeleteConfirm(context, playlist.id, playlist.name);
-                      }
-                    },
-                  ),
-                  onTap: () => _showPlaylistDetail(context, playlist.id),
-                )),
-            ],
-          );
-        },
-      ),
       ),
     );
   }
