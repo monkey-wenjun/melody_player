@@ -104,6 +104,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, settings, child) {
                   return Card(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: Colors.transparent,
+                    elevation: 0,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
