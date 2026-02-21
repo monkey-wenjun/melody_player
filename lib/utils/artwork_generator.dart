@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
@@ -62,35 +63,16 @@ class ArtworkGenerator {
     }
   }
   
-  /// 获取或生成缩略图，返回 content:// URI
+  /// 获取或生成缩略图，返回 base64 data URI
+  /// 使用 data URI 避免 FileProvider 权限问题
   static Future<String?> getArtworkUri(String id, {String? title}) async {
-    await _init();
-    
-    if (_cacheDir == null) return null;
-    
-    final cacheKey = '${id}_$title';
-    final filename = 'artwork_${id.hashCode}.png';
-    final filepath = '$_cacheDir/$filename';
-    
-    // 构建 content:// URI
-    final uri = 'content://com.melody.melody_player.fileprovider/external_cache/$filename';
-    
-    // 检查内存缓存
-    if (_cache.containsKey(cacheKey)) {
-      final file = File(filepath);
-      if (await file.exists()) {
-        print('[ArtworkGenerator] Using cached: $uri');
-        return uri;
-      }
-    }
-    
     try {
-      // 如果文件已存在，直接返回
-      final file = File(filepath);
-      if (await file.exists()) {
-        _cache[cacheKey] = uri;
-        print('[ArtworkGenerator] File exists: $filepath');
-        return uri;
+      final cacheKey = '${id}_$title';
+      
+      // 检查内存缓存
+      if (_cache.containsKey(cacheKey)) {
+        print('[ArtworkGenerator] Using memory cache');
+        return _cache[cacheKey];
       }
       
       // 生成图片
@@ -101,20 +83,21 @@ class ArtworkGenerator {
         return null;
       }
       
-      // 保存到缓存目录
-      await file.writeAsBytes(bytes);
+      // 转换为 base64 data URI
+      final base64 = base64Encode(bytes);
+      final dataUri = 'data:image/png;base64,$base64';
       
-      print('[ArtworkGenerator] Saved: $filepath (${bytes.length} bytes), URI: $uri');
-      _cache[cacheKey] = uri;
+      print('[ArtworkGenerator] Generated data URI: ${dataUri.substring(0, 50)}... (${bytes.length} bytes)');
+      _cache[cacheKey] = dataUri;
       
-      return uri;
+      return dataUri;
     } catch (e, stack) {
       print('[ArtworkGenerator] Error: $e\n$stack');
       return null;
     }
   }
   
-  /// 生成渐变色缩略图 - 使用纯 Dart 的 image 库，不依赖 dart:ui
+  /// 生成渐变色缩略图 - 使用纯 Dart 的 image 库
   static Future<Uint8List?> _generateArtwork(String id, String? title) async {
     try {
       final colors = _getGradientColors(id);
@@ -141,7 +124,7 @@ class ArtworkGenerator {
       // 绘制渐变背景 (对角线渐变)
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-          final t = (x + y) / (width + height); // 对角线插值
+          final t = (x + y) / (width + height);
           final r = (color1.r * (1 - t) + color2.r * t).toInt();
           final g = (color1.g * (1 - t) + color2.g * t).toInt();
           final b = (color1.b * (1 - t) + color2.b * t).toInt();
@@ -149,23 +132,23 @@ class ArtworkGenerator {
         }
       }
       
-      // 绘制文字 - 使用简单的矩形代替文字
-      // 由于 image 库的文字渲染比较复杂，我们用圆形+首字母的方式简化
+      // 绘制白色半透明圆形背景
       final centerX = width ~/ 2;
       final centerY = height ~/ 2;
-      final radius = 120;
+      final radius = 140;
       
-      // 绘制白色半透明圆形背景
       for (int y = centerY - radius; y <= centerY + radius; y++) {
         for (int x = centerX - radius; x <= centerX + radius; x++) {
+          if (x < 0 || x >= width || y < 0 || y >= height) continue;
           final dx = x - centerX;
           final dy = y - centerY;
           if (dx * dx + dy * dy <= radius * radius) {
-            // 半透明白色
             final pixel = image.getPixel(x, y);
-            final r = (pixel.r * 0.7 + 255 * 0.3).toInt();
-            final g = (pixel.g * 0.7 + 255 * 0.3).toInt();
-            final b = (pixel.b * 0.7 + 255 * 0.3).toInt();
+            // 半透明白色叠加
+            final alpha = 0.25;
+            final r = (pixel.r * (1 - alpha) + 255 * alpha).toInt();
+            final g = (pixel.g * (1 - alpha) + 255 * alpha).toInt();
+            final b = (pixel.b * (1 - alpha) + 255 * alpha).toInt();
             image.setPixel(x, y, img.ColorRgb8(r, g, b));
           }
         }
