@@ -60,6 +60,8 @@
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService"/>
             </intent-filter>
+            <meta-data android:name="androidNotificationIcon" android:resource="@mipmap/ic_launcher" />
+            <meta-data android:name="androidNotificationColor" android:resource="@android:color/black" />
         </service>
         
         <!-- 媒体按钮接收器 -->
@@ -75,10 +77,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
         
-        <!-- FileProvider 用于分享 APK 文件 -->
+        <!-- FileProvider 用于分享 APK 文件和通知栏封面 -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="com.melody.melody_player.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
