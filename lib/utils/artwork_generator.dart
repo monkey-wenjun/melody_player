@@ -53,17 +53,11 @@ class ArtworkGenerator {
     if (_initialized) return;
     
     try {
-      // 使用应用外部缓存目录，Android 通知栏可以访问
-      final dir = await getExternalCacheDirectories();
-      if (dir != null && dir.isNotEmpty) {
-        _cacheDir = dir.first.path;
-      } else {
-        final appDir = await getApplicationSupportDirectory();
-        _cacheDir = appDir.path;
-      }
+      // 使用应用 files 目录，audio_service 可以访问
+      final appDir = await getApplicationDocumentsDirectory();
       
       // 创建 artwork 子目录
-      final artworkDir = Directory('$_cacheDir/artworks');
+      final artworkDir = Directory('${appDir.path}/artworks');
       if (!await artworkDir.exists()) {
         await artworkDir.create(recursive: true);
       }
