@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.34-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.35-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -65,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.34) | [点击下载](https://file.awen.me/music/melody_player_v1.9.34.apk) | ~52 MB |
+| 最新版 (v1.9.35) | [点击下载](https://file.awen.me/music/melody_player_v1.9.35.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -194,9 +194,9 @@ build/app/outputs/flutter-apk/app-release.apk
 
 ## 🚀 更新日志
 
-### v1.9.34 (2026-02-20)
-- 🔧 修复日志导出编码错误问题
-- 🎨 修复系统通知栏缩略图显示（有封面显示封面，无封面显示默认图标）
+### v1.9.35 (2026-02-20)
+- 🎨 后台通知栏无封面歌曲显示渐变色缩略图（与应用内样式一致）
+- 🔧 使用 FileProvider 生成 content:// URI 供系统通知栏使用
 
 ### v1.9.33 (2026-02-20)
 - 🔧 修复切歌不正常工作的问题
