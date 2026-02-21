@@ -3,6 +3,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
+import '../utils/artwork_generator.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
@@ -90,7 +91,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// 更新当前媒体项
-  void _updateMediaItem() {
+  Future<void> _updateMediaItem() async {
     if (_songs.isEmpty || _currentIndex >= _songs.length) return;
     
     final song = _songs[_currentIndex];
@@ -98,7 +99,17 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     // 构建专辑封面 URI
     Uri? artUri;
     if (song.albumId != null && song.albumId!.isNotEmpty) {
+      // 先尝试系统媒体库封面
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+    } else {
+      // 无封面时生成渐变色缩略图
+      final generatedUri = await ArtworkGenerator.getArtworkUri(
+        song.id,
+        title: song.title,
+      );
+      if (generatedUri != null) {
+        artUri = Uri.parse(generatedUri);
+      }
     }
     
     final mediaItem = MediaItem(
@@ -124,13 +135,23 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     _currentIndex = initialIndex.clamp(0, _songs.length - 1);
     
     // 构建队列
-    final queueItems = _songs.map((song) {
+    final queueItems = <MediaItem>[];
+    for (final song in _songs) {
       Uri? artUri;
       if (song.albumId != null && song.albumId!.isNotEmpty) {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+      } else {
+        // 无封面时生成渐变色缩略图
+        final generatedUri = await ArtworkGenerator.getArtworkUri(
+          song.id,
+          title: song.title,
+        );
+        if (generatedUri != null) {
+          artUri = Uri.parse(generatedUri);
+        }
       }
       
-      return MediaItem(
+      queueItems.add(MediaItem(
         id: song.uri,
         title: song.title,
         album: song.album.isEmpty ? '未知专辑' : song.album,
@@ -139,8 +160,8 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         artUri: artUri,
         displayTitle: song.title,
         displaySubtitle: song.artist.isEmpty ? '未知艺术家' : song.artist,
-      );
-    }).toList();
+      ));
+    }
     
     // 更新队列
     queue.add(queueItems);
@@ -162,7 +183,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
 
     try {
       // 先更新媒体项，确保通知栏能显示歌曲信息
-      _updateMediaItem();
+      await _updateMediaItem();
       
       final uri = song.uri.startsWith('content://') 
           ? Uri.parse(song.uri) 
