@@ -37,15 +37,28 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A2E) : theme.scaffoldBackgroundColor,
-      body: GestureDetector(
-        // 下滑手势隐藏播放器 - 更灵敏的关闭体验
-        onVerticalDragEnd: (details) {
-          if (details.primaryVelocity != null && details.primaryVelocity! > 100) {
-            // 向下滑动速度超过阈值，关闭页面
-            Navigator.pop(context);
-          }
-        },
-        child: SafeArea(
+      body: Container(
+        // 全局渐变背景
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.08),
+              theme.colorScheme.secondary.withOpacity(0.05),
+              theme.colorScheme.tertiary.withOpacity(0.03),
+            ],
+          ),
+        ),
+        child: GestureDetector(
+          // 下滑手势隐藏播放器 - 更灵敏的关闭体验
+          onVerticalDragEnd: (details) {
+            if (details.primaryVelocity != null && details.primaryVelocity! > 100) {
+              // 向下滑动速度超过阈值，关闭页面
+              Navigator.pop(context);
+            }
+          },
+          child: SafeArea(
           child: Consumer<PlayerProvider>(
             builder: (context, player, child) {
               final song = player.currentSong;
@@ -190,6 +203,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             },
           ),
         ),
+      ),
       ),
     );
   }
