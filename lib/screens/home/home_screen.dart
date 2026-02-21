@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/library_provider.dart';
@@ -112,31 +113,59 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _onTabChanged,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: '首页',
+      bottomNavigationBar: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.10),
+                  Theme.of(context).colorScheme.tertiary.withOpacity(0.08),
+                ],
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: _onTabChanged,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              surfaceTintColor: Colors.transparent,
+              indicatorColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: '首页',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.library_music_outlined),
+                  selectedIcon: Icon(Icons.library_music),
+                  label: '音乐库',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.playlist_play_outlined),
+                  selectedIcon: Icon(Icons.playlist_play),
+                  label: '歌单',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings),
+                  label: '设置',
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.library_music_outlined),
-            selectedIcon: Icon(Icons.library_music),
-            label: '音乐库',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.playlist_play_outlined),
-            selectedIcon: Icon(Icons.playlist_play),
-            label: '歌单',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: '设置',
-          ),
-        ],
+        ),
       ),
     );
   }
