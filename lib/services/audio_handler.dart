@@ -175,11 +175,12 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// 播放当前索引的歌曲
   Future<void> _playCurrentSong() async {
     if (_songs.isEmpty || _currentIndex < 0 || _currentIndex >= _songs.length) {
+      print('[AudioHandler] Invalid state: songs=${_songs.length}, index=$_currentIndex');
       return;
     }
 
     final song = _songs[_currentIndex];
-    logInfo('AudioHandler', 'Playing: ${song.title}');
+    print('[AudioHandler] Playing: ${song.title} (index: $_currentIndex)');
 
     try {
       // 先更新媒体项，确保通知栏能显示歌曲信息
@@ -189,12 +190,15 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
           ? Uri.parse(song.uri) 
           : Uri.file(song.uri);
 
+      print('[AudioHandler] Setting audio source: $uri');
       await _player.setAudioSource(AudioSource.uri(uri));
+      print('[AudioHandler] Audio source set, now playing...');
       await _player.play();
       
       _updatePlaybackState();
-    } catch (e) {
-      logInfo('AudioHandler', 'Error playing: $e');
+      print('[AudioHandler] Playback started successfully');
+    } catch (e, stack) {
+      print('[AudioHandler] Error playing: $e\n$stack');
     }
   }
 
@@ -218,21 +222,29 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() async {
-    if (_songs.isEmpty) return;
+    print('[AudioHandler] skipToNext called, currentIndex: $_currentIndex, songs: ${_songs.length}');
+    if (_songs.isEmpty) {
+      print('[AudioHandler] No songs to skip');
+      return;
+    }
     
     if (_shuffleMode) {
       _currentIndex = DateTime.now().millisecond % _songs.length;
+      print('[AudioHandler] Shuffle mode, new index: $_currentIndex');
     } else {
       final nextIndex = _currentIndex + 1;
       if (nextIndex >= _songs.length) {
         if (_loopMode == LoopMode.all) {
           _currentIndex = 0;
+          print('[AudioHandler] Loop to first song');
         } else {
           // 非循环模式下已到最后一首，不执行操作
+          print('[AudioHandler] Already at last song, not looping');
           return;
         }
       } else {
         _currentIndex = nextIndex;
+        print('[AudioHandler] Next index: $_currentIndex');
       }
     }
     _currentIndexController.add(_currentIndex);
@@ -241,29 +253,38 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToPrevious() async {
-    if (_songs.isEmpty) return;
+    print('[AudioHandler] skipToPrevious called, currentIndex: $_currentIndex, position: ${_player.position}');
+    if (_songs.isEmpty) {
+      print('[AudioHandler] No songs to skip');
+      return;
+    }
     
     // 如果当前播放超过3秒且不是第一首，先跳到开头
     // 但如果是第一首或循环模式，则切换到上一首/最后一首
     if (_player.position > const Duration(seconds: 3) && _currentIndex > 0) {
+      print('[AudioHandler] Seeking to beginning of current song');
       await _player.seek(Duration.zero);
       return;
     }
     
     if (_shuffleMode) {
       _currentIndex = DateTime.now().millisecond % _songs.length;
+      print('[AudioHandler] Shuffle mode, new index: $_currentIndex');
     } else {
       final prevIndex = _currentIndex - 1;
       if (prevIndex < 0) {
         if (_loopMode == LoopMode.all) {
           _currentIndex = _songs.length - 1;
+          print('[AudioHandler] Loop to last song');
         } else {
           // 非循环模式下已在第一首，跳到开头
+          print('[AudioHandler] At first song, seeking to beginning');
           await _player.seek(Duration.zero);
           return;
         }
       } else {
         _currentIndex = prevIndex;
+        print('[AudioHandler] Previous index: $_currentIndex');
       }
     }
     _currentIndexController.add(_currentIndex);
