@@ -201,8 +201,20 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return SafeArea(
-      child: CustomScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withOpacity(0.06),
+            theme.colorScheme.secondary.withOpacity(0.04),
+            theme.colorScheme.tertiary.withOpacity(0.02),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
@@ -263,6 +275,7 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
