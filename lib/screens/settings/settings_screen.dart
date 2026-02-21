@@ -648,8 +648,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
         ),
       ],
-      ),
-      ),
-  );
+    );
   }
 }
