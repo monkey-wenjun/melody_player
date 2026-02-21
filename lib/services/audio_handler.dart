@@ -102,16 +102,17 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     if (song.albumId != null && song.albumId!.isNotEmpty) {
       // 先尝试系统媒体库封面
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
-      logInfo('AudioHandler', 'Using system artwork: $artUri');
+      print('[AudioHandler] Using system artwork for: ${song.title}, uri: $artUri');
     } else {
       // 无封面时生成渐变色缩略图
-      final artworkPath = await ArtworkGenerator.getArtworkPath(
+      print('[AudioHandler] No albumId for: ${song.title}, generating artwork...');
+      final artworkUri = await ArtworkGenerator.getArtworkPath(
         song.id,
         title: song.title,
       );
-      if (artworkPath != null) {
-        artUri = Uri.file(artworkPath);
-        logInfo('AudioHandler', 'Using generated artwork: $artworkPath');
+      if (artworkUri != null) {
+        artUri = Uri.parse(artworkUri);
+        print('[AudioHandler] Using generated artwork: $artworkUri');
       } else {
         print('[AudioHandler] Failed to generate artwork for: ${song.title}');
       }
@@ -131,7 +132,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     this.mediaItem.add(mediaItem);
     
-    logInfo('AudioHandler', 'MediaItem updated: ${song.title}, artUri: $artUri');
+    print('[AudioHandler] MediaItem updated: ${song.title}, artUri: $artUri');
   }
 
   /// 设置播放列表
@@ -147,12 +148,12 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       } else {
         // 无封面时生成渐变色缩略图
-        final artworkPath = await ArtworkGenerator.getArtworkPath(
+        final artworkUri = await ArtworkGenerator.getArtworkPath(
           song.id,
           title: song.title,
         );
-        if (artworkPath != null) {
-          artUri = Uri.file(artworkPath);
+        if (artworkUri != null) {
+          artUri = Uri.parse(artworkUri);
         }
       }
       
