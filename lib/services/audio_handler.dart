@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
 import '../utils/artwork_generator.dart';
+import '../utils/logger.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
@@ -101,14 +102,18 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     if (song.albumId != null && song.albumId!.isNotEmpty) {
       // 先尝试系统媒体库封面
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+      logInfo('AudioHandler', 'Using system artwork: $artUri');
     } else {
       // 无封面时生成渐变色缩略图
-      final generatedUri = await ArtworkGenerator.getArtworkUri(
+      final artworkPath = await ArtworkGenerator.getArtworkPath(
         song.id,
         title: song.title,
       );
-      if (generatedUri != null) {
-        artUri = Uri.parse(generatedUri);
+      if (artworkPath != null) {
+        artUri = Uri.file(artworkPath);
+        logInfo('AudioHandler', 'Using generated artwork: $artworkPath');
+      } else {
+        print('[AudioHandler] Failed to generate artwork for: ${song.title}');
       }
     }
     
@@ -142,12 +147,12 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       } else {
         // 无封面时生成渐变色缩略图
-        final generatedUri = await ArtworkGenerator.getArtworkUri(
+        final artworkPath = await ArtworkGenerator.getArtworkPath(
           song.id,
           title: song.title,
         );
-        if (generatedUri != null) {
-          artUri = Uri.parse(generatedUri);
+        if (artworkPath != null) {
+          artUri = Uri.file(artworkPath);
         }
       }
       

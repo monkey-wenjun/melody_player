@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 
+
 /// 预定义的渐变配色方案
 final List<List<Color>> _gradientPalettes = [
   [const Color(0xFF667eea), const Color(0xFF764ba2)], // 紫蓝渐变
@@ -44,38 +45,84 @@ String _getInitial(String title) {
 /// 后台通知栏缩略图生成器
 class ArtworkGenerator {
   static final Map<String, String> _cache = {};
+  static bool _initialized = false;
+  static String? _cacheDir;
+  
+  /// 初始化缓存目录
+  static Future<void> _init() async {
+    if (_initialized) return;
+    
+    try {
+      // 使用应用外部缓存目录，Android 通知栏可以访问
+      final dir = await getExternalCacheDirectories();
+      if (dir != null && dir.isNotEmpty) {
+        _cacheDir = dir.first.path;
+      } else {
+        final appDir = await getApplicationSupportDirectory();
+        _cacheDir = appDir.path;
+      }
+      
+      // 创建 artwork 子目录
+      final artworkDir = Directory('$_cacheDir/artworks');
+      if (!await artworkDir.exists()) {
+        await artworkDir.create(recursive: true);
+      }
+      _cacheDir = artworkDir.path;
+      
+      _initialized = true;
+      print('[ArtworkGenerator] Cache dir: $_cacheDir');
+    } catch (e) {
+      print('[ArtworkGenerator] Init error: $e');
+    }
+  }
   
   /// 获取或生成缩略图文件路径
-  /// 返回本地文件 URI (file://...)
-  static Future<String?> getArtworkUri(String id, {String? title}) async {
+  /// 返回本地文件绝对路径
+  static Future<String?> getArtworkPath(String id, {String? title}) async {
+    await _init();
+    
+    if (_cacheDir == null) {
+      print('[ArtworkGenerator] Cache dir is null');
+      return null;
+    }
+    
     final cacheKey = '${id}_${title ?? ""}';
+    final filename = 'artwork_${id.hashCode}.jpg';
+    final filepath = '$_cacheDir/$filename';
     
     // 检查内存缓存
     if (_cache.containsKey(cacheKey)) {
-      final file = File(_cache[cacheKey]!);
+      final file = File(filepath);
       if (await file.exists()) {
-        return _cache[cacheKey];
+        print('[ArtworkGenerator] Using cached: $filepath');
+        return filepath;
       }
     }
     
     try {
+      // 如果文件已存在，直接返回
+      final file = File(filepath);
+      if (await file.exists()) {
+        _cache[cacheKey] = filepath;
+        return filepath;
+      }
+      
       // 生成图片
       final bytes = await _generateArtwork(id, title);
-      if (bytes == null) return null;
+      if (bytes == null) {
+        print('[ArtworkGenerator] Failed to generate artwork');
+        return null;
+      }
       
       // 保存到缓存目录
-      final dir = await getTemporaryDirectory();
-      final filename = 'artwork_${id.hashCode}.png';
-      final file = File('${dir.path}/$filename');
-      
       await file.writeAsBytes(bytes);
       
-      final uri = file.uri.toString();
-      _cache[cacheKey] = uri;
+      print('[ArtworkGenerator] Saved artwork: $filepath (${bytes.length} bytes)');
+      _cache[cacheKey] = filepath;
       
-      return uri;
+      return filepath;
     } catch (e) {
-      print('ArtworkGenerator error: $e');
+      print('[ArtworkGenerator] Error: $e');
       return null;
     }
   }
@@ -85,10 +132,12 @@ class ArtworkGenerator {
     final colors = _getGradientColors(id);
     final initial = _getInitial(title ?? '');
     
-    // 创建图片 (500x500 用于通知栏)
+    print('[ArtworkGenerator] Generating artwork for: $title, initial: $initial');
+    
+    // 创建图片 (512x512 用于通知栏)
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
-    final size = const Size(500, 500);
+    final size = const Size(512, 512);
     
     // 绘制渐变背景
     final gradient = LinearGradient(
@@ -107,7 +156,7 @@ class ArtworkGenerator {
       text: TextSpan(
         text: initial,
         style: const TextStyle(
-          fontSize: 200,
+          fontSize: 220,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -127,21 +176,30 @@ class ArtworkGenerator {
     // 生成图片
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.width.toInt(), size.height.toInt());
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     
-    return byteData?.buffer.asUint8List();
+    // 使用 PNG 格式
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) {
+      print('[ArtworkGenerator] Failed to encode image');
+      return null;
+    }
+    
+    return byteData.buffer.asUint8List();
   }
   
   /// 清理缓存（可选，定期调用）
   static Future<void> clearCache() async {
-    for (final uri in _cache.values) {
-      try {
-        final file = File(Uri.parse(uri).path);
-        if (await file.exists()) {
-          await file.delete();
-        }
-      } catch (_) {}
+    if (_cacheDir == null) return;
+    
+    try {
+      final dir = Directory(_cacheDir!);
+      if (await dir.exists()) {
+        await dir.delete(recursive: true);
+        await dir.create();
+      }
+      _cache.clear();
+    } catch (e) {
+      print('[ArtworkGenerator] Clear cache error: $e');
     }
-    _cache.clear();
   }
 }
