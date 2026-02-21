@@ -267,8 +267,22 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   // 获取艺术家详情
+  // 注意：从已加载的歌曲中按艺术家名称过滤，而不是查询系统媒体库
+  // 因为 Artist.id 是 artist.hashCode，与系统媒体库的 ID 不匹配
   Future<List<Song>> getSongsByArtist(String artistId) async {
-    return await _scanner.getSongsByArtist(artistId);
+    // 首先尝试从已加载的歌曲中查找匹配的艺术家
+    final artist = _artists.firstWhere(
+      (a) => a.id == artistId,
+      orElse: () => Artist(id: '', name: '', numberOfAlbums: 0, numberOfTracks: 0),
+    );
+    
+    if (artist.name.isEmpty) {
+      // 如果找不到艺术家，回退到系统查询
+      return await _scanner.getSongsByArtist(artistId);
+    }
+    
+    // 按艺术家名称过滤已加载的歌曲
+    return _songs.where((s) => s.artist == artist.name).toList();
   }
 
   // 获取封面
