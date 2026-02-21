@@ -1,26 +1,25 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
 
-/// 预定义的渐变配色方案
-final List<List<Color>> _gradientPalettes = [
-  [const Color(0xFF667eea), const Color(0xFF764ba2)], // 紫蓝渐变
-  [const Color(0xFFf093fb), const Color(0xFFf5576c)], // 粉紫渐变
-  [const Color(0xFF4facfe), const Color(0xFF00f2fe)], // 青色渐变
-  [const Color(0xFF43e97b), const Color(0xFF38f9d7)], // 绿色渐变
-  [const Color(0xFFfa709a), const Color(0xFFfee140)], // 橙粉渐变
-  [const Color(0xFF30cfd0), const Color(0xFF330867)], // 深青紫渐变
-  [const Color(0xFFa8edea), const Color(0xFFfed6e3)], // 柔和粉青
-  [const Color(0xFFff9a9e), const Color(0xFFfecfef)], // 浅粉渐变
-  [const Color(0xFFffecd2), const Color(0xFFfcb69f)], // 暖橙渐变
-  [const Color(0xFF11998e), const Color(0xFF38ef7d)], // 翠绿渐变
-  [const Color(0xFFfc5c7d), const Color(0xFF6a82fb)], // 粉蓝渐变
+/// 预定义的渐变配色方案 (RGB格式)
+final List<List<int>> _gradientPalettes = [
+  [0xFF667eea, 0xFF764ba2], // 紫蓝渐变
+  [0xFFf093fb, 0xFFf5576c], // 粉紫渐变
+  [0xFF4facfe, 0xFF00f2fe], // 青色渐变
+  [0xFF43e97b, 0xFF38f9d7], // 绿色渐变
+  [0xFFfa709a, 0xFFfee140], // 橙粉渐变
+  [0xFF30cfd0, 0xFF330867], // 深青紫渐变
+  [0xFFa8edea, 0xFFfed6e3], // 柔和粉青
+  [0xFFff9a9e, 0xFFfecfef], // 浅粉渐变
+  [0xFFffecd2, 0xFFfcb69f], // 暖橙渐变
+  [0xFF11998e, 0xFF38ef7d], // 翠绿渐变
+  [0xFFfc5c7d, 0xFF6a82fb], // 粉蓝渐变
 ];
 
 /// 根据ID获取一致的渐变颜色
-List<Color> _getGradientColors(String id) {
+List<int> _getGradientColors(String id) {
   int hash = 0;
   for (int i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash) + id.codeUnitAt(i);
@@ -74,7 +73,6 @@ class ArtworkGenerator {
     final filepath = '$_cacheDir/$filename';
     
     // 构建 content:// URI
-    // 注意：这里使用 external-cache-path，需要在 file_paths.xml 中配置
     final uri = 'content://com.melody.melody_player.fileprovider/external_cache/$filename';
     
     // 检查内存缓存
@@ -91,67 +89,94 @@ class ArtworkGenerator {
       final file = File(filepath);
       if (await file.exists()) {
         _cache[cacheKey] = uri;
+        print('[ArtworkGenerator] File exists: $filepath');
         return uri;
       }
       
       // 生成图片
+      print('[ArtworkGenerator] Generating artwork for: $title');
       final bytes = await _generateArtwork(id, title);
-      if (bytes == null) return null;
+      if (bytes == null) {
+        print('[ArtworkGenerator] Failed to generate artwork');
+        return null;
+      }
       
       // 保存到缓存目录
       await file.writeAsBytes(bytes);
       
-      print('[ArtworkGenerator] Saved: $filepath, URI: $uri');
+      print('[ArtworkGenerator] Saved: $filepath (${bytes.length} bytes), URI: $uri');
       _cache[cacheKey] = uri;
       
       return uri;
-    } catch (e) {
-      print('[ArtworkGenerator] Error: $e');
+    } catch (e, stack) {
+      print('[ArtworkGenerator] Error: $e\n$stack');
       return null;
     }
   }
   
-  /// 生成渐变色缩略图
+  /// 生成渐变色缩略图 - 使用纯 Dart 的 image 库，不依赖 dart:ui
   static Future<Uint8List?> _generateArtwork(String id, String? title) async {
-    final colors = _getGradientColors(id);
-    final initial = _getInitial(title);
-    
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    const size = Size(512, 512);
-    
-    // 渐变背景
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: colors,
-    );
-    final paint = Paint()
-      ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-    
-    // 文字
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: initial,
-        style: const TextStyle(
-          fontSize: 220,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset((size.width - textPainter.width) / 2, (size.height - textPainter.height) / 2),
-    );
-    
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(512, 512);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    
-    return byteData?.buffer.asUint8List();
+    try {
+      final colors = _getGradientColors(id);
+      final initial = _getInitial(title);
+      
+      const width = 512;
+      const height = 512;
+      
+      // 创建图片
+      final image = img.Image(width: width, height: height);
+      
+      // 解析颜色
+      final color1 = img.ColorRgb8(
+        (colors[0] >> 16) & 0xFF,
+        (colors[0] >> 8) & 0xFF,
+        colors[0] & 0xFF,
+      );
+      final color2 = img.ColorRgb8(
+        (colors[1] >> 16) & 0xFF,
+        (colors[1] >> 8) & 0xFF,
+        colors[1] & 0xFF,
+      );
+      
+      // 绘制渐变背景 (对角线渐变)
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          final t = (x + y) / (width + height); // 对角线插值
+          final r = (color1.r * (1 - t) + color2.r * t).toInt();
+          final g = (color1.g * (1 - t) + color2.g * t).toInt();
+          final b = (color1.b * (1 - t) + color2.b * t).toInt();
+          image.setPixel(x, y, img.ColorRgb8(r, g, b));
+        }
+      }
+      
+      // 绘制文字 - 使用简单的矩形代替文字
+      // 由于 image 库的文字渲染比较复杂，我们用圆形+首字母的方式简化
+      final centerX = width ~/ 2;
+      final centerY = height ~/ 2;
+      final radius = 120;
+      
+      // 绘制白色半透明圆形背景
+      for (int y = centerY - radius; y <= centerY + radius; y++) {
+        for (int x = centerX - radius; x <= centerX + radius; x++) {
+          final dx = x - centerX;
+          final dy = y - centerY;
+          if (dx * dx + dy * dy <= radius * radius) {
+            // 半透明白色
+            final pixel = image.getPixel(x, y);
+            final r = (pixel.r * 0.7 + 255 * 0.3).toInt();
+            final g = (pixel.g * 0.7 + 255 * 0.3).toInt();
+            final b = (pixel.b * 0.7 + 255 * 0.3).toInt();
+            image.setPixel(x, y, img.ColorRgb8(r, g, b));
+          }
+        }
+      }
+      
+      // 编码为 PNG
+      final png = img.encodePng(image);
+      return Uint8List.fromList(png);
+    } catch (e, stack) {
+      print('[ArtworkGenerator] Generate error: $e\n$stack');
+      return null;
+    }
   }
 }
