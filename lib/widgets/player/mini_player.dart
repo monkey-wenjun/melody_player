@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
@@ -136,82 +137,94 @@ class _MiniPlayerState extends State<MiniPlayer> {
               });
             }
           },
-          child: Container(
-            height: 64,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2A2A4A) : Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  const SizedBox(width: 12),
-                  // 专辑封面或歌词指示器
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _showLyrics = !_showLyrics;
-                      });
-                    },
-                    child: _showLyrics && _lyricsLines.isNotEmpty
-                        ? _buildLyricsIndicator(theme)
-                        : AlbumArt(
-                            id: song.id,
-                            size: 44,
-                            borderRadius: 6,
-                            title: song.title,
-                            artist: song.artist,
-                          ),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary.withOpacity(0.12),
+                      theme.colorScheme.secondary.withOpacity(0.08),
+                      theme.colorScheme.tertiary.withOpacity(0.05),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  // 歌曲信息或滚动歌词
-                  Expanded(
-                    child: _showLyrics && _lyricsLines.isNotEmpty
-                        ? _buildScrollingLyrics(theme)
-                        : _buildSongInfo(song, theme),
-                  ),
-                  // 定时器指示器
-                  if (player.sleepTimerActive)
-                    Container(
-                      margin: const EdgeInsets.only(right: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        player.sleepTimerText,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  border: Border(
+                    top: BorderSide(
+                      color: theme.colorScheme.outline.withOpacity(0.1),
+                      width: 0.5,
                     ),
-                  // 播放控制
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous, size: 24),
-                    onPressed: player.previous,
                   ),
-                  PlayPauseButton(
-                    isPlaying: player.isPlaying,
-                    onPressed: player.togglePlay,
-                    size: 40,
-                    iconSize: 24,
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      // 专辑封面或歌词指示器
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _showLyrics = !_showLyrics;
+                          });
+                        },
+                        child: _showLyrics && _lyricsLines.isNotEmpty
+                            ? _buildLyricsIndicator(theme)
+                            : AlbumArt(
+                                id: song.id,
+                                size: 44,
+                                borderRadius: 6,
+                                title: song.title,
+                                artist: song.artist,
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      // 歌曲信息或滚动歌词
+                      Expanded(
+                        child: _showLyrics && _lyricsLines.isNotEmpty
+                            ? _buildScrollingLyrics(theme)
+                            : _buildSongInfo(song, theme),
+                      ),
+                      // 定时器指示器
+                      if (player.sleepTimerActive)
+                        Container(
+                          margin: const EdgeInsets.only(right: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            player.sleepTimerText,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      // 播放控制
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous, size: 24),
+                        onPressed: player.previous,
+                      ),
+                      PlayPauseButton(
+                        isPlaying: player.isPlaying,
+                        onPressed: player.togglePlay,
+                        size: 40,
+                        iconSize: 24,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.skip_next, size: 24),
+                        onPressed: player.next,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.skip_next, size: 24),
-                    onPressed: player.next,
-                  ),
-                  const SizedBox(width: 8),
-                ],
+                ),
               ),
             ),
           ),

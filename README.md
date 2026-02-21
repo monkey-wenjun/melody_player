@@ -197,6 +197,10 @@ build/app/outputs/flutter-apk/app-release.apk
 ### v1.9.45 (2026-02-20)
 - 🎨 底部导航栏添加渐变色和毛玻璃透明效果
 
+### v1.9.46 (2026-02-20)
+- 🎨 迷你播放器和全屏播放器控制栏添加毛玻璃渐变效果
+- 🔧 修复通知栏封面显示 - 恢复使用系统封面 URI
+
 ### v1.9.44 (2026-02-20)
 - 🔧 修复通知栏封面不显示 - 配置 AudioService 通知栏图标和 FileProvider authority
 

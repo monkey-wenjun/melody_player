@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:provider/provider.dart';
@@ -155,8 +156,33 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       ),
                     ),
 
-                  // 播放控制（固定在底部）
-                  _buildPlayerControls(context, player, theme),
+                  // 播放控制（固定在底部，带毛玻璃效果）
+                  ClipRRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              theme.colorScheme.primary.withOpacity(0.12),
+                              theme.colorScheme.secondary.withOpacity(0.08),
+                              theme.colorScheme.tertiary.withOpacity(0.05),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withOpacity(0.1),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: _buildPlayerControls(context, player, theme),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 32),
                 ],

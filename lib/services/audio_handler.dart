@@ -96,16 +96,24 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     final song = _songs[_currentIndex];
     
-    // 构建专辑封面 URI - 使用应用生成的渐变色封面
-    // 避免使用系统封面，因为无法验证其是否存在
+    // 构建专辑封面 URI
+    // 优先使用系统封面，如果不存在则使用生成的渐变色封面
     Uri? artUri;
-    final artworkUri = await ArtworkGenerator.getArtworkUri(
-      song.id,
-      title: song.title,
-    );
-    if (artworkUri != null) {
-      artUri = Uri.parse(artworkUri);
-      logInfo('AudioHandler', 'Using generated artwork: $artworkUri');
+    
+    if (song.albumId != null && song.albumId!.isNotEmpty) {
+      // 使用系统媒体库封面
+      artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
+      logInfo('AudioHandler', 'Using system artwork: $artUri');
+    } else {
+      // 无封面时生成渐变色缩略图
+      final artworkUri = await ArtworkGenerator.getArtworkUri(
+        song.id,
+        title: song.title,
+      );
+      if (artworkUri != null) {
+        artUri = Uri.parse(artworkUri);
+        logInfo('AudioHandler', 'Using generated artwork: $artworkUri');
+      }
     }
     
     final mediaItem = MediaItem(
@@ -122,7 +130,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     this.mediaItem.add(mediaItem);
     
-    logInfo('AudioHandler', 'MediaItem set: ${song.title}, artUri: $artUri');
+    logInfo('AudioHandler', 'MediaItem set: ${song.title}, artUri: $artUri, albumId: ${song.albumId}');
   }
 
   /// 设置播放列表
