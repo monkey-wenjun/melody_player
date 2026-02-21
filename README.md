@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.24-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.25-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -65,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.24) | [点击下载](https://file.awen.me/music/melody_player_v1.9.24.apk) | ~52 MB |
+| 最新版 (v1.9.25) | [点击下载](https://file.awen.me/music/melody_player_v1.9.25.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -194,10 +194,12 @@ build/app/outputs/flutter-apk/app-release.apk
 
 ## 🚀 更新日志
 
+### v1.9.25 (2026-02-20)
+- 🔧 修复后台通知栏缩略图生成逻辑，使用正确的 PNG 格式
+
 ### v1.9.24 (2026-02-20)
 - ✨ 后台播放通知栏缩略图支持渐变色显示
 - 🎨 无封面歌曲在通知栏显示渐变色图标和首字母
-- 🔧 修复后台播放时灰色音乐图标问题
 
 ### v1.9.23 (2026-02-20)
 - ✨ 重新设计无封面歌曲缩略图，使用渐变色背景显示歌曲信息
