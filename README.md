@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.42-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.43-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -65,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.42) | [点击下载](https://file.awen.me/music/melody_player_v1.9.42.apk) | ~52 MB |
+| 最新版 (v1.9.43) | [点击下载](https://file.awen.me/music/melody_player_v1.9.43.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -193,6 +193,9 @@ build/app/outputs/flutter-apk/app-release.apk
 ---
 
 ## 🚀 更新日志
+
+### v1.9.43 (2026-02-20)
+- 🔧 修复播放阻塞 - 不在 setPlaylist 中为所有歌曲预生成封面，只给当前播放歌曲生成
 
 ### v1.9.42 (2026-02-20)
 - 🔧 紧急修复 - 移除 `on_audio_query` 在后台的使用，修复无法播放的问题

@@ -130,26 +130,15 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     _songs = List.from(songs);
     _currentIndex = initialIndex.clamp(0, _songs.length - 1);
     
-    // 构建队列
+    // 构建队列 - 不预生成封面，避免阻塞播放初始化
     final queueItems = <MediaItem>[];
     for (final song in _songs) {
-      // 使用应用生成的渐变色封面
-      Uri? artUri;
-      final artworkUri = await ArtworkGenerator.getArtworkUri(
-        song.id,
-        title: song.title,
-      );
-      if (artworkUri != null) {
-        artUri = Uri.parse(artworkUri);
-      }
-      
       queueItems.add(MediaItem(
         id: song.uri,
         title: song.title,
         album: song.album.isEmpty ? '未知专辑' : song.album,
         artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
         duration: Duration(milliseconds: song.duration),
-        artUri: artUri,
         displayTitle: song.title,
         displaySubtitle: song.artist.isEmpty ? '未知艺术家' : song.artist,
       ));
