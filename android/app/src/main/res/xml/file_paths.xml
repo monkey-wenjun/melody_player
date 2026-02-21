@@ -8,4 +8,6 @@
     <cache-path name="cache" path="." />
     <!-- 应用文件目录 -->
     <files-path name="files" path="." />
+    <!-- artworks 子目录 (用于通知栏缩略图) -->
+    <files-path name="artworks" path="artworks/" />
 </paths>

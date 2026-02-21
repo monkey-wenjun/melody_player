@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 
+// 包名，用于构建 content:// URI
+const String _packageName = 'com.melody.melody_player';
+
 
 /// 预定义的渐变配色方案
 final List<List<Color>> _gradientPalettes = [
@@ -53,8 +56,8 @@ class ArtworkGenerator {
     if (_initialized) return;
     
     try {
-      // 使用应用 files 目录，audio_service 可以访问
-      final appDir = await getApplicationDocumentsDirectory();
+      // 使用应用 files 目录 (/data/data/{package}/files)，FileProvider 可以访问
+      final appDir = await getApplicationSupportDirectory();
       
       // 创建 artwork 子目录
       final artworkDir = Directory('${appDir.path}/artworks');
@@ -70,8 +73,8 @@ class ArtworkGenerator {
     }
   }
   
-  /// 获取或生成缩略图文件路径
-  /// 返回本地文件绝对路径
+  /// 获取或生成缩略图
+  /// 返回 content:// URI，Android 通知栏可以访问
   static Future<String?> getArtworkPath(String id, {String? title}) async {
     await _init();
     
@@ -81,40 +84,58 @@ class ArtworkGenerator {
     }
     
     final cacheKey = '${id}_${title ?? ""}';
-    final filename = 'artwork_${id.hashCode}.jpg';
+    final filename = 'artwork_${id.hashCode}.png';
     final filepath = '$_cacheDir/$filename';
+    
+    // 构建 content:// URI (使用 FileProvider)
+    final contentUri = 'content://$_packageName.fileprovider/artworks/$filename';
+    
+    print('[ArtworkGenerator] Getting artwork for id=$id, title=$title');
+    print('[ArtworkGenerator] Filepath: $filepath');
+    print('[ArtworkGenerator] Content URI: $contentUri');
     
     // 检查内存缓存
     if (_cache.containsKey(cacheKey)) {
       final file = File(filepath);
       if (await file.exists()) {
-        print('[ArtworkGenerator] Using cached: $filepath');
-        return filepath;
+        print('[ArtworkGenerator] Using cached: $contentUri');
+        return contentUri;
       }
     }
     
     try {
-      // 如果文件已存在，直接返回
+      // 如果文件已存在，直接返回 content URI
       final file = File(filepath);
       if (await file.exists()) {
-        _cache[cacheKey] = filepath;
-        return filepath;
+        print('[ArtworkGenerator] File exists, returning: $contentUri');
+        _cache[cacheKey] = contentUri;
+        return contentUri;
       }
       
       // 生成图片
+      print('[ArtworkGenerator] Generating new artwork...');
       final bytes = await _generateArtwork(id, title);
       if (bytes == null) {
         print('[ArtworkGenerator] Failed to generate artwork');
         return null;
       }
+      print('[ArtworkGenerator] Generated ${bytes.length} bytes');
       
       // 保存到缓存目录
+      print('[ArtworkGenerator] Writing to file...');
       await file.writeAsBytes(bytes);
       
-      print('[ArtworkGenerator] Saved artwork: $filepath (${bytes.length} bytes)');
-      _cache[cacheKey] = filepath;
-      
-      return filepath;
+      // 验证文件是否写入成功
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        print('[ArtworkGenerator] Saved artwork: $filepath ($fileSize bytes)');
+        print('[ArtworkGenerator] Returning content URI: $contentUri');
+        _cache[cacheKey] = contentUri;
+        return contentUri;
+      } else {
+        print('[ArtworkGenerator] File was not created!');
+        return null;
+      }
     } catch (e) {
       print('[ArtworkGenerator] Error: $e');
       return null;
