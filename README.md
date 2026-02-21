@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.18-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.23-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -65,7 +65,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.18) | [点击下载](https://file.awen.me/music/melody_player_v1.9.18.apk) | ~52 MB |
+| 最新版 (v1.9.23) | [点击下载](https://file.awen.me/music/melody_player_v1.9.23.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -193,6 +193,13 @@ build/app/outputs/flutter-apk/app-release.apk
 ---
 
 ## 🚀 更新日志
+
+### v1.9.23 (2026-02-20)
+- ✨ 重新设计无封面歌曲缩略图，使用渐变色背景显示歌曲信息
+- 🔧 修复艺术家详情页无法显示歌曲的问题
+
+### v1.9.22 (2026-02-20)
+- ✨ 重新设计无封面歌曲缩略图，使用渐变色背景显示歌曲首字母和名称
 
 ### v1.9.17 (2026-02-19)
 - ✨ 新增黑胶唱片播放器效果，带金属质感唱臂
