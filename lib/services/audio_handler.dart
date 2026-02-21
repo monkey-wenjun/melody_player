@@ -3,7 +3,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
-import '../utils/notification_artwork.dart';
+import '../utils/vinyl_artwork.dart';
 import '../utils/logger.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
@@ -104,17 +104,14 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       print('[AudioHandler] Using system artwork for: ${song.title}, uri: $artUri');
     } else {
-      // 无封面时生成渐变色缩略图
-      print('[AudioHandler] No albumId for: ${song.title}, generating artwork...');
-      final artworkUri = await NotificationArtwork.getOrCreate(
-        song.id,
-        song.title,
-      );
-      if (artworkUri != null) {
-        artUri = Uri.parse(artworkUri);
-        print('[AudioHandler] Using generated artwork: $artworkUri');
+      // 无封面时使用黑胶唱片图标
+      print('[AudioHandler] No albumId for: ${song.title}, using vinyl icon...');
+      final vinylPath = await VinylArtwork.getVinylPath();
+      if (vinylPath != null) {
+        artUri = Uri.file(vinylPath);
+        print('[AudioHandler] Using vinyl icon: $vinylPath');
       } else {
-        print('[AudioHandler] Failed to generate artwork for: ${song.title}');
+        print('[AudioHandler] Failed to get vinyl icon');
       }
     }
     
@@ -147,13 +144,10 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
       if (song.albumId != null && song.albumId!.isNotEmpty) {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       } else {
-        // 无封面时生成渐变色缩略图
-        final artworkUri = await NotificationArtwork.getOrCreate(
-          song.id,
-          song.title,
-        );
-        if (artworkUri != null) {
-          artUri = Uri.parse(artworkUri);
+        // 无封面时使用黑胶唱片图标
+        final vinylPath = await VinylArtwork.getVinylPath();
+        if (vinylPath != null) {
+          artUri = Uri.file(vinylPath);
         }
       }
       
