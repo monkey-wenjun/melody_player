@@ -55,7 +55,9 @@ class Logger {
   Future<String> getLogContent() async {
     try {
       if (_logFile != null && await _logFile!.exists()) {
-        return await _logFile!.readAsString();
+        // 使用 latin1 解码避免 UTF-8 错误
+        final bytes = await _logFile!.readAsBytes();
+        return String.fromCharCodes(bytes);
       }
     } catch (e) {
       return 'Error reading log: $e';

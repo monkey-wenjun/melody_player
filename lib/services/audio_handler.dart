@@ -3,8 +3,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
-import '../utils/vinyl_artwork.dart';
-import '../utils/logger.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
 class MyAudioHandler extends BaseAudioHandler with SeekHandler {
@@ -97,26 +95,19 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     final song = _songs[_currentIndex];
     
-    // 构建专辑封面 URI
+    // 构建专辑封面 URI - 只使用系统媒体库的封面
+    // 系统通知栏只支持 content://media/ 格式的图片
     Uri? artUri;
     if (song.albumId != null && song.albumId!.isNotEmpty) {
-      // 先尝试系统媒体库封面
       artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
-      print('[AudioHandler] Using system artwork for: ${song.title}, uri: $artUri');
+      print('[AudioHandler] Using system artwork: $artUri');
     } else {
-      // 无封面时使用黑胶唱片图标
-      print('[AudioHandler] No albumId for: ${song.title}, using vinyl icon...');
-      final vinylPath = await VinylArtwork.getVinylPath();
-      if (vinylPath != null) {
-        artUri = Uri.file(vinylPath);
-        print('[AudioHandler] Using vinyl icon: $vinylPath');
-      } else {
-        print('[AudioHandler] Failed to get vinyl icon');
-      }
+      // 无封面时不设置 artUri，系统会显示默认音乐图标
+      print('[AudioHandler] No albumId, using default system icon');
     }
     
     final mediaItem = MediaItem(
-      id: song.uri,  // 使用 URI 作为唯一标识
+      id: song.uri,
       title: song.title,
       album: song.album.isEmpty ? '未知专辑' : song.album,
       artist: song.artist.isEmpty ? '未知艺术家' : song.artist,
@@ -129,7 +120,7 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     
     this.mediaItem.add(mediaItem);
     
-    print('[AudioHandler] MediaItem updated: ${song.title}, artUri: $artUri');
+    print('[AudioHandler] MediaItem: ${song.title}, artUri: $artUri');
   }
 
   /// 设置播放列表
@@ -140,15 +131,10 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     // 构建队列
     final queueItems = <MediaItem>[];
     for (final song in _songs) {
+      // 只使用系统媒体库封面，无封面时不设置 artUri
       Uri? artUri;
       if (song.albumId != null && song.albumId!.isNotEmpty) {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
-      } else {
-        // 无封面时使用黑胶唱片图标
-        final vinylPath = await VinylArtwork.getVinylPath();
-        if (vinylPath != null) {
-          artUri = Uri.file(vinylPath);
-        }
       }
       
       queueItems.add(MediaItem(
