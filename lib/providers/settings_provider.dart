@@ -9,6 +9,9 @@ class SettingsProvider extends ChangeNotifier {
   static const String _autoScanKey = 'auto_scan';
   static const String _skipShortAudioKey = 'skip_short_audio';
   static const String _minDurationKey = 'min_duration';
+  static const String _dlnaEnabledKey = 'dlna_enabled';
+  static const String _sleepTimerEnabledKey = 'sleep_timer_enabled';
+  static const String _sleepTimerDurationKey = 'sleep_timer_duration';
 
   SharedPreferences? _prefs;
   
@@ -18,6 +21,9 @@ class SettingsProvider extends ChangeNotifier {
   bool _autoScan = true;
   bool _skipShortAudio = true;
   int _minDuration = 30; // 秒
+  bool _dlnaEnabled = false;
+  bool _sleepTimerEnabled = false;
+  int _sleepTimerDuration = 30; // 分钟
 
   // Getters
   AppTheme get theme => _theme;
@@ -25,6 +31,9 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoScan => _autoScan;
   bool get skipShortAudio => _skipShortAudio;
   int get minDuration => _minDuration;
+  bool get dlnaEnabled => _dlnaEnabled;
+  bool get sleepTimerEnabled => _sleepTimerEnabled;
+  int get sleepTimerDuration => _sleepTimerDuration;
 
   bool get hasCustomScanPaths => _scanPaths.isNotEmpty;
 
@@ -67,6 +76,13 @@ class SettingsProvider extends ChangeNotifier {
     
     // 最小时长
     _minDuration = _prefs?.getInt(_minDurationKey) ?? 30;
+    
+    // DLNA 投屏开关
+    _dlnaEnabled = _prefs?.getBool(_dlnaEnabledKey) ?? false;
+    
+    // 定时播放
+    _sleepTimerEnabled = _prefs?.getBool(_sleepTimerEnabledKey) ?? false;
+    _sleepTimerDuration = _prefs?.getInt(_sleepTimerDurationKey) ?? 30;
     
     notifyListeners();
   }
@@ -125,6 +141,27 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // DLNA 投屏开关
+  Future<void> setDlnaEnabled(bool value) async {
+    _dlnaEnabled = value;
+    await _prefs?.setBool(_dlnaEnabledKey, value);
+    notifyListeners();
+  }
+
+  // 定时播放开关
+  Future<void> setSleepTimerEnabled(bool value) async {
+    _sleepTimerEnabled = value;
+    await _prefs?.setBool(_sleepTimerEnabledKey, value);
+    notifyListeners();
+  }
+
+  // 定时播放时长
+  Future<void> setSleepTimerDuration(int minutes) async {
+    _sleepTimerDuration = minutes;
+    await _prefs?.setInt(_sleepTimerDurationKey, minutes);
+    notifyListeners();
+  }
+
   // 重置设置
   Future<void> resetSettings() async {
     _theme = AppTheme.system;
@@ -132,12 +169,18 @@ class SettingsProvider extends ChangeNotifier {
     _autoScan = true;
     _skipShortAudio = true;
     _minDuration = 30;
+    _dlnaEnabled = false;
+    _sleepTimerEnabled = false;
+    _sleepTimerDuration = 30;
     
     await _prefs?.setInt(_themeKey, _theme.index);
     await _prefs?.remove(_scanPathsKey);
     await _prefs?.setBool(_autoScanKey, _autoScan);
     await _prefs?.setBool(_skipShortAudioKey, _skipShortAudio);
     await _prefs?.setInt(_minDurationKey, _minDuration);
+    await _prefs?.setBool(_dlnaEnabledKey, _dlnaEnabled);
+    await _prefs?.setBool(_sleepTimerEnabledKey, _sleepTimerEnabled);
+    await _prefs?.setInt(_sleepTimerDurationKey, _sleepTimerDuration);
     
     notifyListeners();
   }

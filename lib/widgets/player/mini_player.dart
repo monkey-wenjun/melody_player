@@ -177,6 +177,24 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         ? _buildScrollingLyrics(theme)
                         : _buildSongInfo(song, theme),
                   ),
+                  // 定时器指示器
+                  if (player.sleepTimerActive)
+                    Container(
+                      margin: const EdgeInsets.only(right: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        player.sleepTimerText,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   // 播放控制
                   IconButton(
                     icon: const Icon(Icons.skip_previous, size: 24),

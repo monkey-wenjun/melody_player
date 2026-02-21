@@ -66,6 +66,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           '正在播放',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
+                        // 定时播放按钮
+                        _buildSleepTimerButton(context),
                         IconButton(
                           icon: const Icon(Icons.more_vert),
                           onPressed: () => _showMoreOptions(context, song),
@@ -280,6 +282,135 @@ class _PlayerScreenState extends State<PlayerScreen> {
           onPressed: () => _showPlaylist(context),
         ),
       ],
+    );
+  }
+
+  // 定时播放按钮
+  Widget _buildSleepTimerButton(BuildContext context) {
+    return Consumer<PlayerProvider>(
+      builder: (context, player, child) {
+        if (!player.sleepTimerActive) {
+          return IconButton(
+            icon: const Icon(Icons.timer_outlined),
+            onPressed: () => _showSleepTimerSheet(context),
+          );
+        }
+        return GestureDetector(
+          onTap: () => _showSleepTimerSheet(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              player.sleepTimerText,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 显示定时播放选择
+  void _showSleepTimerSheet(BuildContext context) {
+    final player = context.read<PlayerProvider>();
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text(
+                '定时播放',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              trailing: player.sleepTimerActive
+                  ? TextButton(
+                      onPressed: () {
+                        player.stopSleepTimer();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('取消定时'),
+                    )
+                  : null,
+            ),
+            const Divider(),
+            if (!player.sleepTimerActive) ...[
+              ListTile(
+                leading: const Icon(Icons.timer),
+                title: const Text('15 分钟'),
+                onTap: () {
+                  player.startSleepTimer(15);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.timer),
+                title: const Text('30 分钟'),
+                onTap: () {
+                  player.startSleepTimer(30);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.timer),
+                title: const Text('45 分钟'),
+                onTap: () {
+                  player.startSleepTimer(45);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.timer),
+                title: const Text('60 分钟'),
+                onTap: () {
+                  player.startSleepTimer(60);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.timer),
+                title: const Text('90 分钟'),
+                onTap: () {
+                  player.startSleepTimer(90);
+                  Navigator.pop(context);
+                },
+              ),
+            ] else ...[
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.timer,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '剩余时间: ${player.sleepTimerText}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('播放将在倒计时结束后自动停止'),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

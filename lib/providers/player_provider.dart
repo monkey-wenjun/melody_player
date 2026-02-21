@@ -34,6 +34,8 @@ class PlayerProvider extends ChangeNotifier {
   Song? get currentSong => _currentSong;
   int get currentIndex => _currentIndex;
   PlaybackMode get playbackMode => _playbackMode;
+  Duration get sleepTimerRemaining => _sleepTimerRemaining;
+  bool get sleepTimerActive => _sleepTimerActive;
   
   double get progress {
     if (_duration.inMilliseconds == 0) return 0;
@@ -48,6 +50,11 @@ class PlayerProvider extends ChangeNotifier {
   StreamSubscription? _positionSub;
   StreamSubscription? _durationSub;
   StreamSubscription? _indexSub;
+  
+  // 定时播放
+  Timer? _sleepTimer;
+  Duration _sleepTimerRemaining = Duration.zero;
+  bool _sleepTimerActive = false;
 
   PlayerProvider() {
     _init();
@@ -280,6 +287,45 @@ class PlayerProvider extends ChangeNotifier {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  // ========== 定时播放 ==========
+  
+  /// 启动定时播放
+  void startSleepTimer(int minutes) {
+    _sleepTimer?.cancel();
+    _sleepTimerRemaining = Duration(minutes: minutes);
+    _sleepTimerActive = true;
+    
+    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_sleepTimerRemaining.inSeconds > 0) {
+        _sleepTimerRemaining -= const Duration(seconds: 1);
+        notifyListeners();
+      } else {
+        // 时间到，暂停播放
+        pause();
+        stopSleepTimer();
+      }
+    });
+    
+    notifyListeners();
+  }
+  
+  /// 停止定时播放
+  void stopSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepTimerRemaining = Duration.zero;
+    _sleepTimerActive = false;
+    notifyListeners();
+  }
+  
+  /// 获取定时播放剩余时间文本
+  String get sleepTimerText {
+    if (!_sleepTimerActive) return '关闭';
+    final minutes = _sleepTimerRemaining.inMinutes;
+    final seconds = _sleepTimerRemaining.inSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override

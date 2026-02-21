@@ -199,6 +199,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Divider(),
 
+          // 功能设置
+          _buildSectionHeader(context, '功能设置'),
+          
+          // DLNA 投屏开关
+          Consumer<SettingsProvider>(
+            builder: (context, settings, child) => SwitchListTile(
+              secondary: Icon(Icons.cast, color: theme.colorScheme.primary),
+              title: const Text('DLNA 投屏'),
+              subtitle: const Text('开启后支持投屏到电视/音箱'),
+              value: settings.dlnaEnabled,
+              onChanged: (value) => settings.setDlnaEnabled(value),
+            ),
+          ),
+          
+          // 定时播放
+          Consumer<SettingsProvider>(
+            builder: (context, settings, child) => Column(
+              children: [
+                SwitchListTile(
+                  secondary: Icon(Icons.timer, color: theme.colorScheme.primary),
+                  title: const Text('定时播放'),
+                  subtitle: Text(settings.sleepTimerEnabled 
+                    ? '${settings.sleepTimerDuration} 分钟后自动停止'
+                    : '自动停止播放'),
+                  value: settings.sleepTimerEnabled,
+                  onChanged: (value) {
+                    settings.setSleepTimerEnabled(value);
+                    if (value) {
+                      _showSleepTimerDialog(context, settings);
+                    }
+                  },
+                ),
+                if (settings.sleepTimerEnabled)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Text('15分钟'),
+                        Expanded(
+                          child: Slider(
+                            value: settings.sleepTimerDuration.toDouble(),
+                            min: 15,
+                            max: 120,
+                            divisions: 7,
+                            label: '${settings.sleepTimerDuration}分钟',
+                            onChanged: (value) {
+                              settings.setSleepTimerDuration(value.round());
+                            },
+                          ),
+                        ),
+                        const Text('120分钟'),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          const Divider(),
+
           // 调试
           _buildSectionHeader(context, '调试'),
           ListTile(
@@ -424,6 +484,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showSleepTimerDialog(BuildContext context, SettingsProvider settings) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('设置定时时长'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('播放多久后自动停止？'),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              children: [15, 30, 45, 60, 90, 120].map((minutes) {
+                return ChoiceChip(
+                  label: Text('$minutes分钟'),
+                  selected: settings.sleepTimerDuration == minutes,
+                  onSelected: (selected) {
+                    if (selected) {
+                      settings.setSleepTimerDuration(minutes);
+                      Navigator.pop(context);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+        ],
       ),
     );
   }
