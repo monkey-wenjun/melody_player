@@ -3,7 +3,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/song.dart';
 import '../utils/logger.dart';
-import '../utils/artwork_generator.dart';
+import '../utils/notification_artwork.dart';
 import '../utils/logger.dart';
 
 /// 自定义 AudioHandler 用于后台播放和媒体控制
@@ -106,9 +106,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
     } else {
       // 无封面时生成渐变色缩略图
       print('[AudioHandler] No albumId for: ${song.title}, generating artwork...');
-      final artworkUri = await ArtworkGenerator.getArtworkPath(
+      final artworkUri = await NotificationArtwork.getOrCreate(
         song.id,
-        title: song.title,
+        song.title,
       );
       if (artworkUri != null) {
         artUri = Uri.parse(artworkUri);
@@ -148,9 +148,9 @@ class MyAudioHandler extends BaseAudioHandler with SeekHandler {
         artUri = Uri.parse('content://media/external/audio/albumart/${song.albumId}');
       } else {
         // 无封面时生成渐变色缩略图
-        final artworkUri = await ArtworkGenerator.getArtworkPath(
+        final artworkUri = await NotificationArtwork.getOrCreate(
           song.id,
-          title: song.title,
+          song.title,
         );
         if (artworkUri != null) {
           artUri = Uri.parse(artworkUri);
