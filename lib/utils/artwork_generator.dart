@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as img;
+import 'logger.dart';
 
 /// 预定义的渐变配色方案 (RGB格式)
 final List<List<int>> _gradientPalettes = [
@@ -68,9 +69,9 @@ class ArtworkGenerator {
       }
       
       _initialized = true;
-      print('[ArtworkGenerator] Cache dir: $_cacheDir');
+      logInfo('ArtworkGenerator', 'Cache dir: $_cacheDir');
     } catch (e, stack) {
-      print('[ArtworkGenerator] Init error: $e\n$stack');
+      logError('ArtworkGenerator', 'Init error: $e\n$stack');
     }
   }
   
@@ -80,7 +81,7 @@ class ArtworkGenerator {
       await _init();
       
       if (_cacheDir == null) {
-        print('[ArtworkGenerator] Cache dir is null');
+        logError('ArtworkGenerator', 'Cache dir is null');
         return null;
       }
       
@@ -95,7 +96,7 @@ class ArtworkGenerator {
       if (_cache.containsKey(cacheKey)) {
         final file = File(filepath);
         if (await file.exists()) {
-          print('[ArtworkGenerator] Using cached: $uri');
+          logInfo('ArtworkGenerator', 'Using cached: $uri');
           return uri;
         }
       }
@@ -104,35 +105,35 @@ class ArtworkGenerator {
       final file = File(filepath);
       if (await file.exists()) {
         final size = await file.length();
-        print('[ArtworkGenerator] File exists: $filepath ($size bytes)');
+        logInfo('ArtworkGenerator', 'File exists: $filepath ($size bytes)');
         _cache[cacheKey] = uri;
         return uri;
       }
       
       // 生成图片
-      print('[ArtworkGenerator] Generating artwork for: $title');
+      logInfo('ArtworkGenerator', 'Generating artwork for: $title');
       final bytes = await _generateArtwork(id, title);
       if (bytes == null) {
-        print('[ArtworkGenerator] Failed to generate artwork');
+        logError('ArtworkGenerator', 'Failed to generate artwork');
         return null;
       }
       
       // 保存到缓存目录
       await file.writeAsBytes(bytes);
       final savedSize = await file.length();
-      print('[ArtworkGenerator] Saved: $filepath ($savedSize bytes)');
+      logInfo('ArtworkGenerator', 'Saved: $filepath ($savedSize bytes)');
       
       // 验证文件
       if (await file.exists()) {
-        print('[ArtworkGenerator] File verified, returning URI: $uri');
+        logInfo('ArtworkGenerator', 'File verified, returning URI: $uri');
         _cache[cacheKey] = uri;
         return uri;
       } else {
-        print('[ArtworkGenerator] File save failed!');
+        logError('ArtworkGenerator', 'File save failed!');
         return null;
       }
     } catch (e, stack) {
-      print('[ArtworkGenerator] Error: $e\n$stack');
+      logError('ArtworkGenerator', 'Error: $e\n$stack');
       return null;
     }
   }
@@ -194,10 +195,10 @@ class ArtworkGenerator {
       
       // 编码为 PNG
       final png = img.encodePng(image);
-      print('[ArtworkGenerator] Generated PNG: ${png.length} bytes');
+      logInfo('ArtworkGenerator', 'Generated PNG: ${png.length} bytes');
       return Uint8List.fromList(png);
     } catch (e, stack) {
-      print('[ArtworkGenerator] Generate error: $e\n$stack');
+      logError('ArtworkGenerator', 'Generate error: $e\n$stack');
       return null;
     }
   }
