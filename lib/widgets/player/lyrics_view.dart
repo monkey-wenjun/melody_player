@@ -53,10 +53,15 @@ class _LyricsViewState extends State<LyricsView> {
 
   /// 加载歌词文件
   Future<void> _loadLyrics() async {
-    // 尝试从歌曲同目录加载 .lrc 文件
-    final uri = widget.song.uri;
-    if (!uri.endsWith('.mp3') && !uri.endsWith('.flac') && 
-        !uri.endsWith('.m4a') && !uri.endsWith('.aac')) {
+    // 使用实际文件路径（处理 content:// URI 的情况）
+    final filePath = widget.song.filePath;
+    
+    // 检查是否为支持的音频格式
+    final lowerPath = filePath.toLowerCase();
+    if (!lowerPath.endsWith('.mp3') && !lowerPath.endsWith('.flac') && 
+        !lowerPath.endsWith('.m4a') && !lowerPath.endsWith('.aac') &&
+        !lowerPath.endsWith('.wav') && !lowerPath.endsWith('.ogg') &&
+        !lowerPath.endsWith('.opus')) {
       setState(() {
         _hasLyrics = false;
         _lyrics = [];
@@ -65,7 +70,7 @@ class _LyricsViewState extends State<LyricsView> {
     }
 
     // 构建歌词文件路径
-    final lyricsPath = uri.substring(0, uri.lastIndexOf('.')) + '.lrc';
+    final lyricsPath = filePath.substring(0, filePath.lastIndexOf('.')) + '.lrc';
     
     try {
       final file = File(lyricsPath);
@@ -73,10 +78,13 @@ class _LyricsViewState extends State<LyricsView> {
         final content = await file.readAsString();
         _parseLyrics(content);
       } else {
-        // 尝试其他常见命名格式
+        // 尝试其他常见命名格式（使用歌曲标题）
         final dir = file.parent.path;
-        final fileName = widget.song.title;
-        final alternativePath = '$dir/$fileName.lrc';
+        // 清理文件名中的非法字符
+        final sanitizedTitle = widget.song.title
+            .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
+            .trim();
+        final alternativePath = '$dir/$sanitizedTitle.lrc';
         final altFile = File(alternativePath);
         
         if (await altFile.exists()) {

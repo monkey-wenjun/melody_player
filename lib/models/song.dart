@@ -12,6 +12,8 @@ class Song extends Equatable {
   final String? artworkUri;
   final int? trackNumber;
   final String fileExtension;
+  /// 实际文件路径（用于加载歌词等本地文件操作）
+  final String? data;
 
   const Song({
     required this.id,
@@ -24,6 +26,7 @@ class Song extends Equatable {
     this.artworkUri,
     this.trackNumber,
     required this.fileExtension,
+    this.data,
   });
 
   factory Song.fromSongModel(SongModel model) {
@@ -40,6 +43,7 @@ class Song extends Equatable {
       artworkUri: null,
       trackNumber: model.track,
       fileExtension: model.fileExtension,
+      data: model.data, // 保存实际文件路径
     );
   }
 
@@ -54,6 +58,7 @@ class Song extends Equatable {
     String? artworkUri,
     int? trackNumber,
     String? fileExtension,
+    String? data,
   }) {
     return Song(
       id: id ?? this.id,
@@ -66,6 +71,7 @@ class Song extends Equatable {
       artworkUri: artworkUri ?? this.artworkUri,
       trackNumber: trackNumber ?? this.trackNumber,
       fileExtension: fileExtension ?? this.fileExtension,
+      data: data ?? this.data,
     );
   }
 
@@ -77,4 +83,8 @@ class Song extends Equatable {
 
   @override
   List<Object?> get props => [id, title, artist, album, uri];
+
+  /// 获取用于文件操作的实际路径
+  /// 优先使用 data（实际文件路径），其次是 uri
+  String get filePath => data ?? uri;
 }
