@@ -9,6 +9,9 @@ import 'utils/theme.dart';
 import 'utils/theme_config.dart';
 import 'widgets/update/update_dialog.dart';
 
+// 全局 navigator key
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 class MelodyApp extends StatelessWidget {
   const MelodyApp({Key? key}) : super(key: key);
 
@@ -34,8 +37,8 @@ class MelodyApp extends StatelessWidget {
           return MaterialApp(
             title: '悦音',
             debugShowCheckedModeBanner: false,
+            navigatorKey: appNavigatorKey,
             theme: themeData,
-            // 不设置 darkTheme，统一使用 theme
             themeMode: ThemeMode.light,
             home: const SplashScreen(),
           );

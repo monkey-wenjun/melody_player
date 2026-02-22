@@ -238,13 +238,13 @@ ThemeData createThemeData(ThemeConfig config) {
   final primaryColor = config.primary;
   final secondaryColor = config.secondary;
   
+  // 强制使用高对比度文字颜色
+  final textColor = isDark ? Colors.white : Colors.black87;
+  final secondaryTextColor = isDark ? Colors.white70 : Colors.black54;
+  final tertiaryTextColor = isDark ? Colors.white60 : Colors.black45;
+  
   // 计算 onPrimary 颜色（根据 primary 的亮度）
   final onPrimaryColor = _getContrastColor(primaryColor);
-  
-  // 确保文字颜色对比度足够
-  final textColor = isDark ? Colors.white : Colors.black;
-  final secondaryTextColor = isDark ? Colors.white70 : Colors.black87;
-  final tertiaryTextColor = isDark ? Colors.white60 : Colors.black54;
   
   return ThemeData(
     useMaterial3: true,
@@ -265,6 +265,11 @@ ThemeData createThemeData(ThemeConfig config) {
       outline: textColor.withOpacity(0.2),
     ),
     scaffoldBackgroundColor: config.background,
+    // 关键：设置默认文本样式
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: primaryColor,
+      selectionColor: primaryColor.withOpacity(0.3),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: config.surface,
       foregroundColor: textColor,
@@ -276,6 +281,8 @@ ThemeData createThemeData(ThemeConfig config) {
         fontSize: 20,
         fontWeight: FontWeight.w500,
       ),
+      iconTheme: IconThemeData(color: textColor),
+      actionsIconTheme: IconThemeData(color: textColor),
     ),
     cardTheme: CardTheme(
       color: config.surface,
@@ -304,8 +311,26 @@ ThemeData createThemeData(ThemeConfig config) {
     listTileTheme: ListTileThemeData(
       iconColor: primaryColor,
       textColor: textColor,
-      titleTextStyle: TextStyle(color: textColor, fontSize: 16),
-      subtitleTextStyle: TextStyle(color: tertiaryTextColor, fontSize: 14),
+      titleTextStyle: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500),
+      subtitleTextStyle: TextStyle(color: secondaryTextColor, fontSize: 14),
+      leadingAndTrailingTextStyle: TextStyle(color: textColor),
+    ),
+    // 按钮主题
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: onPrimaryColor,
+        backgroundColor: primaryColor,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: primaryColor,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: primaryColor,
+      ),
     ),
     textTheme: TextTheme(
       displayLarge: TextStyle(color: textColor),

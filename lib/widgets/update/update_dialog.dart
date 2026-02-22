@@ -4,54 +4,43 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import '../../services/update_service.dart';
 
-/// 安装 APK 文件
-Future<void> installApkFile(String filePath, BuildContext context) async {
+import 'package:flutter/services.dart';
+import '../../app.dart';
+
+/// 安装 APK 文件 - 使用全局 navigator 避免 context 失效问题
+Future<void> installApkFile(String filePath, BuildContext? originalContext) async {
   try {
+    // 调用系统安装器
     final result = await OpenFilex.open(
       filePath,
       type: 'application/vnd.android.package-archive',
     );
 
-    if (result.type != ResultType.done && context.mounted) {
-      _showManualInstallDialog(filePath, context);
+    // 如果安装器返回失败，显示手动安装提示
+    if (result.type != ResultType.done) {
+      _showInstallResultSnackBar('请允许安装权限，或在通知栏点击安装提示');
     }
   } catch (e) {
-    if (context.mounted) {
-      _showManualInstallDialog(filePath, context);
-    }
+    // 出错时显示提示
+    _showInstallResultSnackBar('安装提示：请在通知栏查看安装请求，或到文件管理器手动安装');
   }
 }
 
-void _showManualInstallDialog(String filePath, BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('手动安装'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('自动安装失败，请按以下步骤手动安装：'),
-          const SizedBox(height: 12),
-          const Text('1. 打开文件管理器'),
-          const Text('2. 进入 Download 目录'),
-          Text('3. 点击 ${filePath.split('/').last}'),
-          const Text('4. 允许安装未知来源应用'),
-          const SizedBox(height: 12),
-          Text(
-            '文件位置:\n$filePath',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('知道了'),
+/// 显示安装结果提示
+void _showInstallResultSnackBar(String message) {
+  final context = appNavigatorKey.currentContext;
+  if (context != null && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: '知道了',
+          onPressed: () {},
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class UpdateDialog extends StatefulWidget {
@@ -196,11 +185,11 @@ class _UpdateDialogState extends State<UpdateDialog> {
             )
           else ...[
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                final path = _downloadedFilePath!;
                 Navigator.pop(context);
-                Future.delayed(const Duration(milliseconds: 300), () {
-                  installApkFile(_downloadedFilePath!, context);
-                });
+                await Future.delayed(const Duration(milliseconds: 200));
+                await installApkFile(path, null);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
@@ -228,39 +217,45 @@ class _UpdateDialogState extends State<UpdateDialog> {
       _status = '准备下载...';
     });
 
+    String? filePath;
     try {
       final updateService = UpdateService();
       
-      final filePath = await updateService.downloadApk(
+      filePath = await updateService.downloadApk(
         widget.updateInfo.downloadUrl,
         widget.updateInfo.fileName,
         onProgress: (progress) {
-          setState(() {
-            _progress = progress;
-            _status = '下载中... ${(progress * 100).toStringAsFixed(1)}%';
-          });
+          if (mounted) {
+            setState(() {
+              _progress = progress;
+              _status = '下载中... ${(progress * 100).toStringAsFixed(1)}%';
+            });
+          }
         },
       );
-
-      // 下载完成后，先关闭对话框再安装
-      if (mounted) {
-        Navigator.pop(context);
-      }
-      
-      // 延迟一下确保对话框关闭后再调起安装
-      await Future.delayed(const Duration(milliseconds: 300));
-      
-      // 直接调起安装
-      await installApkFile(filePath, context);
     } catch (e) {
-      setState(() {
-        _isDownloading = false;
-        _status = '下载失败: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _status = '下载失败: $e';
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('下载失败: $e')),
+        );
+      }
+      return;
+    }
+
+    // 下载成功，关闭对话框并安装
+    if (mounted && filePath != null) {
+      Navigator.pop(context);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('下载失败: $e')),
-      );
+      // 延迟确保对话框关闭
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      // 直接调起安装（不依赖 context）
+      await installApkFile(filePath, null);
     }
   }
 
@@ -270,14 +265,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
     Navigator.pop(context);
     
     // 显示下载中的通知
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('正在后台下载更新...'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    _showGlobalSnackBar('正在后台下载更新...');
     
     try {
       final updateService = UpdateService();
@@ -292,14 +280,19 @@ class _UpdateDialogState extends State<UpdateDialog> {
       );
 
       // 后台下载完成后自动安装
-      await installApkFile(filePath, context);
+      await installApkFile(filePath, null);
     } catch (e) {
       print('后台下载失败: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('后台下载失败: $e')),
-        );
-      }
+      _showGlobalSnackBar('后台下载失败: $e');
+    }
+  }
+  
+  void _showGlobalSnackBar(String message) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
 
@@ -328,6 +321,9 @@ class _UpdateDialogState extends State<UpdateDialog> {
   }
 
   void _showManualInstallDialog() {
+    final fileName = widget.updateInfo.fileName;
+    final filePath = _downloadedFilePath ?? '未知路径';
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -340,11 +336,11 @@ class _UpdateDialogState extends State<UpdateDialog> {
             const SizedBox(height: 12),
             const Text('1. 打开文件管理器'),
             const Text('2. 进入 Download 目录'),
-            Text('3. 点击 ${widget.updateInfo.fileName}'),
+            Text('3. 点击 $fileName'),
             const Text('4. 允许安装未知来源应用'),
             const SizedBox(height: 12),
             Text(
-              '文件位置:\n$_downloadedFilePath',
+              '文件位置:\n$filePath',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -434,10 +430,10 @@ Future<void> checkAndShowUpdate(BuildContext context, {bool manual = false}) asy
               child: const Text('稍后'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                // 自动调起安装
-                installApkFile(existingPath, context);
+                await Future.delayed(const Duration(milliseconds: 200));
+                await installApkFile(existingPath, null);
               },
               child: const Text('立即安装'),
             ),
