@@ -8,6 +8,7 @@ import '../../providers/settings_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/logger.dart';
 import '../../widgets/update/update_dialog.dart';
+import '../../widgets/player/player_styles.dart';
 import '../folder_picker/folder_picker_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -90,6 +91,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: Text(themeText),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _showThemeDialog(context),
+                  );
+                },
+              ),
+
+              // 播放器样式设置
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  return ListTile(
+                    leading: Icon(Icons.music_video, color: theme.colorScheme.primary),
+                    title: const Text('播放器样式'),
+                    subtitle: Text(_getPlayerStyleName(settings.playerStyle)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showPlayerStyleDialog(context),
                   );
                 },
               ),
@@ -219,17 +233,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               // 功能设置
               _buildSectionHeader(context, '功能设置'),
-              
-              // Google Cast 投屏开关
-              Consumer<SettingsProvider>(
-                builder: (context, settings, child) => SwitchListTile(
-                  secondary: Icon(Icons.cast_connected, color: theme.colorScheme.primary),
-                  title: const Text('Google Cast'),
-                  subtitle: const Text('开启后支持投屏到 Chromecast/智能音箱'),
-                  value: settings.castEnabled,
-                  onChanged: (value) => settings.setCastEnabled(value),
-                ),
-              ),
               
               // 定时播放
               Consumer<SettingsProvider>(
@@ -391,6 +394,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  String _getPlayerStyleName(PlayerStyle style) {
+    switch (style) {
+      case PlayerStyle.vinyl:
+        return '黑胶唱片';
+      case PlayerStyle.waveform:
+        return '波形可视';
+      case PlayerStyle.rotatingDisc:
+        return '旋转光盘';
+      case PlayerStyle.minimal:
+        return '简约封面';
+    }
+  }
+
+  void _showPlayerStyleDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('选择播放器样式'),
+        content: Consumer<SettingsProvider>(
+          builder: (context, settings, child) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PlayerStyleSelector(
+                  selectedStyle: settings.playerStyle,
+                  onStyleSelected: (style) {
+                    settings.setPlayerStyle(style);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

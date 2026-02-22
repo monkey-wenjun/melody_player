@@ -4,14 +4,12 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/playlist_provider.dart';
-import '../../providers/settings_provider.dart';
-import '../../services/cast_service.dart';
 import '../../widgets/common/add_to_playlist_dialog.dart';
 import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/player/player_controls.dart';
-import '../../widgets/player/vinyl_record.dart';
 import '../../widgets/player/lyrics_view.dart';
-import '../../widgets/player/cast_button.dart';
+import '../../widgets/player/player_styles.dart';
+import '../../providers/settings_provider.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({Key? key}) : super(key: key);
@@ -82,13 +80,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         const Text(
                           '正在播放',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                        // Google Cast 按钮
-                        Consumer<SettingsProvider>(
-                          builder: (context, settings, child) {
-                            if (!settings.castEnabled) return const SizedBox.shrink();
-                            return const CastButton();
-                          },
                         ),
                         // 定时播放按钮
                         _buildSleepTimerButton(context),
@@ -212,17 +203,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget _buildPlayerPage(BuildContext context, var song, PlayerProvider player, ThemeData theme) {
     return Column(
       children: [
-        // 黑胶唱片播放器
+        // 播放器（根据设置选择样式）
         Expanded(
           flex: 3,
           child: Center(
             child: Hero(
               tag: 'album_art_${song.id}',
-              child: VinylPlayerWithArm(
-                songId: song.id,
-                size: 320,
-                title: song.title,
-                artist: song.artist,
+              child: Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  return _buildPlayerByStyle(
+                    settings.playerStyle,
+                    song.id,
+                    song.title,
+                    song.artist,
+                  );
+                },
               ),
             ),
           ),
@@ -294,6 +289,40 @@ class _PlayerScreenState extends State<PlayerScreen> {
         const SizedBox(height: 24),
       ],
     );
+  }
+
+  /// 根据样式构建播放器
+  Widget _buildPlayerByStyle(PlayerStyle style, String songId, String title, String artist) {
+    switch (style) {
+      case PlayerStyle.vinyl:
+        return VinylPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.waveform:
+        return WaveformPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.rotatingDisc:
+        return RotatingDiscPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.minimal:
+        return MinimalPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+    }
   }
 
   /// 播放控制按钮
