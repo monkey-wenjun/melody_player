@@ -409,6 +409,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return '旋转光盘';
       case PlayerStyle.minimal:
         return '简约封面';
+      case PlayerStyle.retroCassette:
+        return '复古磁带';
+      case PlayerStyle.neonPulse:
+        return '霓虹脉冲';
+      case PlayerStyle.particleNebula:
+        return '粒子星云';
+      case PlayerStyle.spectrumWaterfall:
+        return '频谱瀑布';
+      case PlayerStyle.magicAura:
+        return '魔法光环';
+      case PlayerStyle.equalizer:
+        return '均衡器';
+      case PlayerStyle.ripple:
+        return '水滴波纹';
+      case PlayerStyle.cyberpunk:
+        return '赛博朋克';
+      case PlayerStyle.card3D:
+        return '3D卡片';
+      case PlayerStyle.cdCase:
+        return '光盘盒';
     }
   }
 

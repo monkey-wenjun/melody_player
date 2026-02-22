@@ -9,6 +9,7 @@ import '../../widgets/common/song_info_dialog.dart';
 import '../../widgets/player/player_controls.dart';
 import '../../widgets/player/lyrics_view.dart';
 import '../../widgets/player/player_styles.dart';
+import '../../widgets/player/player_styles_extra.dart';
 import '../../providers/settings_provider.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -317,6 +318,76 @@ class _PlayerScreenState extends State<PlayerScreen> {
         );
       case PlayerStyle.minimal:
         return MinimalPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.retroCassette:
+        return RetroCassettePlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.neonPulse:
+        return NeonPulsePlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.particleNebula:
+        return ParticleNebulaPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.spectrumWaterfall:
+        return SpectrumWaterfallPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.magicAura:
+        return MagicAuraPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.equalizer:
+        return EqualizerPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.ripple:
+        return RipplePlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.cyberpunk:
+        return CyberpunkPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.card3D:
+        return Card3DPlayer(
+          songId: songId,
+          size: 320,
+          title: title,
+          artist: artist,
+        );
+      case PlayerStyle.cdCase:
+        return CDCasePlayer(
           songId: songId,
           size: 320,
           title: title,

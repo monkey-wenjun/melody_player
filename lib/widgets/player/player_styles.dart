@@ -903,6 +903,16 @@ class PlayerStyleSelector extends StatelessWidget {
       _StyleItem(PlayerStyle.waveform, '波形可视', Icons.equalizer),
       _StyleItem(PlayerStyle.rotatingDisc, '旋转光盘', Icons.disc_full),
       _StyleItem(PlayerStyle.minimal, '简约封面', Icons.image),
+      _StyleItem(PlayerStyle.retroCassette, '复古磁带', Icons.radio),
+      _StyleItem(PlayerStyle.neonPulse, '霓虹脉冲', Icons.lightbulb),
+      _StyleItem(PlayerStyle.particleNebula, '粒子星云', Icons.auto_awesome),
+      _StyleItem(PlayerStyle.spectrumWaterfall, '频谱瀑布', Icons.bar_chart),
+      _StyleItem(PlayerStyle.magicAura, '魔法光环', Icons.brightness_7),
+      _StyleItem(PlayerStyle.equalizer, '均衡器', Icons.graphic_eq),
+      _StyleItem(PlayerStyle.ripple, '水滴波纹', Icons.water),
+      _StyleItem(PlayerStyle.cyberpunk, '赛博朋克', Icons.computer),
+      _StyleItem(PlayerStyle.card3D, '3D卡片', Icons.view_in_ar),
+      _StyleItem(PlayerStyle.cdCase, '光盘盒', Icons.album_outlined),
     ];
 
     return Column(

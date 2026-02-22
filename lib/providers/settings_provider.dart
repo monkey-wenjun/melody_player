@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppTheme { light, dark, system }
-enum PlayerStyle { vinyl, waveform, rotatingDisc, minimal }
+enum PlayerStyle { 
+  vinyl, waveform, rotatingDisc, minimal,
+  retroCassette, neonPulse, particleNebula, spectrumWaterfall,
+  magicAura, equalizer, ripple, cyberpunk, card3D, cdCase
+}
 
 class SettingsProvider extends ChangeNotifier {
   static const String _themeKey = 'app_theme';
