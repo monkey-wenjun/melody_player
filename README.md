@@ -8,7 +8,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.24+-02569B?style=flat-square&logo=flutter" alt="Flutter"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.5+-0175C2?style=flat-square&logo=dart" alt="Dart"></a>
   <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-5.0+-3DDC84?style=flat-square&logo=android" alt="Android"></a>
-  <img src="https://img.shields.io/badge/Version-1.9.45-FF6B6B?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.9.59-FF6B6B?style=flat-square" alt="Version">
 </p>
 
 <p align="center">一款简洁、清新、轻量的本地音乐播放器</p>
@@ -34,7 +34,9 @@
 
 ### 🎨 界面与体验
 - **精美界面** - 简洁清新的 Material Design 设计风格
-- **深色模式** - 支持浅色/深色主题切换，适配系统主题
+- **13 种主题** - 浅色、深色、樱花粉、深海蓝、森林绿、紫罗兰、日落橙、薄荷青、暗黑红、金色奢华、天空蓝、霓虹紫、跟随系统
+- **14 种播放器样式** - 黑胶唱片、波形可视化、旋转碟片、极简风格、复古磁带、霓虹脉冲、粒子星云、频谱瀑布、魔法光环、均衡器、涟漪效果、赛博朋克、3D 卡片、CD 盒
+- **玻璃拟态效果** - 所有页面背景采用毛玻璃模糊效果
 - **流畅动画** - 精心设计的转场动画和交互反馈
 - **迷你播放器** - 底部常驻迷你播放条，支持左右滑动切换歌词显示
 - **手势操作** - 播放器页面下滑隐藏，右滑显示歌词
@@ -65,7 +67,7 @@
 ### 直接下载
 | 版本 | 下载链接 | 文件大小 |
 |:---:|:---:|:---:|
-| 最新版 (v1.9.45) | [点击下载](https://file.awen.me/music/melody_player_v1.9.45.apk) | ~52 MB |
+| 最新版 (v1.9.59) | [点击下载](https://file.awen.me/music/melody_player_v1.9.59.apk) | ~52 MB |
 
 ### 系统要求
 - **Android 版本**: Android 5.0 (API 21) 及以上
@@ -193,6 +195,13 @@ build/app/outputs/flutter-apk/app-release.apk
 ---
 
 ## 🚀 更新日志
+
+### v1.9.59 (2026-02-22)
+- 🎨 **13 种全新主题** - 支持樱花粉、深海蓝、森林绿、紫罗兰、日落橙、薄荷青、暗黑红、金色奢华、天空蓝、霓虹紫等多种配色
+- 🎵 **14 种播放器样式** - 新增波形可视化、旋转碟片、复古磁带、霓虹脉冲、粒子星云、频谱瀑布、魔法光环、均衡器、涟漪效果、赛博朋克、3D 卡片、CD 盒等炫酷效果
+- ✨ **玻璃拟态设计** - 所有页面背景采用 BackdropFilter 毛玻璃模糊效果
+- 🔧 修复主题选择器文字对比度问题
+- 🔧 修复 APK 下载后自动安装问题
 
 ### v1.9.45 (2026-02-20)
 - 🎨 底部导航栏添加渐变色和毛玻璃透明效果
