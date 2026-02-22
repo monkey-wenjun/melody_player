@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/theme_config.dart';
 
-enum AppTheme { light, dark, system }
+enum AppTheme { 
+  light, dark, system,
+  sakuraPink, oceanBlue, forestGreen, violetPurple, 
+  sunsetOrange, mintTeal, darkRed, goldLuxury, 
+  skyBlue, neonPurple
+}
 enum PlayerStyle { 
   vinyl, waveform, rotatingDisc, minimal,
   retroCassette, neonPulse, particleNebula, spectrumWaterfall,
@@ -45,16 +51,93 @@ class SettingsProvider extends ChangeNotifier {
   ThemeMode get themeMode {
     switch (_theme) {
       case AppTheme.light:
+      case AppTheme.sakuraPink:
+      case AppTheme.forestGreen:
+      case AppTheme.sunsetOrange:
+      case AppTheme.mintTeal:
+      case AppTheme.skyBlue:
         return ThemeMode.light;
       case AppTheme.dark:
+      case AppTheme.oceanBlue:
+      case AppTheme.violetPurple:
+      case AppTheme.darkRed:
+      case AppTheme.goldLuxury:
+      case AppTheme.neonPurple:
         return ThemeMode.dark;
       case AppTheme.system:
         return ThemeMode.system;
     }
   }
 
-  bool get isDarkMode => _theme == AppTheme.dark;
-  bool get isLightMode => _theme == AppTheme.light;
+  /// 获取当前主题的完整配置
+  ThemeData get themeData {
+    switch (_theme) {
+      case AppTheme.light:
+        return createThemeData(AppThemes.light);
+      case AppTheme.dark:
+        return createThemeData(AppThemes.dark);
+      case AppTheme.sakuraPink:
+        return createThemeData(AppThemes.sakuraPink);
+      case AppTheme.oceanBlue:
+        return createThemeData(AppThemes.oceanBlue);
+      case AppTheme.forestGreen:
+        return createThemeData(AppThemes.forestGreen);
+      case AppTheme.violetPurple:
+        return createThemeData(AppThemes.violetPurple);
+      case AppTheme.sunsetOrange:
+        return createThemeData(AppThemes.sunsetOrange);
+      case AppTheme.mintTeal:
+        return createThemeData(AppThemes.mintTeal);
+      case AppTheme.darkRed:
+        return createThemeData(AppThemes.darkRed);
+      case AppTheme.goldLuxury:
+        return createThemeData(AppThemes.goldLuxury);
+      case AppTheme.skyBlue:
+        return createThemeData(AppThemes.skyBlue);
+      case AppTheme.neonPurple:
+        return createThemeData(AppThemes.neonPurple);
+      case AppTheme.system:
+      default:
+        return createThemeData(AppThemes.light);
+    }
+  }
+
+  /// 获取主题配置信息（用于显示）
+  ThemeConfig get themeConfig {
+    switch (_theme) {
+      case AppTheme.light:
+        return AppThemes.light;
+      case AppTheme.dark:
+        return AppThemes.dark;
+      case AppTheme.sakuraPink:
+        return AppThemes.sakuraPink;
+      case AppTheme.oceanBlue:
+        return AppThemes.oceanBlue;
+      case AppTheme.forestGreen:
+        return AppThemes.forestGreen;
+      case AppTheme.violetPurple:
+        return AppThemes.violetPurple;
+      case AppTheme.sunsetOrange:
+        return AppThemes.sunsetOrange;
+      case AppTheme.mintTeal:
+        return AppThemes.mintTeal;
+      case AppTheme.darkRed:
+        return AppThemes.darkRed;
+      case AppTheme.goldLuxury:
+        return AppThemes.goldLuxury;
+      case AppTheme.skyBlue:
+        return AppThemes.skyBlue;
+      case AppTheme.neonPurple:
+        return AppThemes.neonPurple;
+      case AppTheme.system:
+      default:
+        return AppThemes.light;
+    }
+  }
+
+  bool get isDarkMode => themeMode == ThemeMode.dark;
+  bool get isLightMode => themeMode == ThemeMode.light;
+  bool get isCustomTheme => _theme.index >= 3;
 
   SettingsProvider() {
     _init();

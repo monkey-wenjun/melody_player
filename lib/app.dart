@@ -6,6 +6,7 @@ import 'providers/playlist_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/splash/splash_screen.dart';
 import 'utils/theme.dart';
+import 'utils/theme_config.dart';
 import 'widgets/update/update_dialog.dart';
 
 class MelodyApp extends StatelessWidget {
@@ -28,12 +29,15 @@ class MelodyApp extends StatelessWidget {
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
+          // 使用自定义主题或默认主题
+          final isCustomTheme = settings.isCustomTheme;
+          
           return MaterialApp(
             title: '悦音',
             debugShowCheckedModeBanner: false,
-            theme: AppThemeData.lightTheme,
-            darkTheme: AppThemeData.darkTheme,
-            themeMode: settings.themeMode,
+            theme: isCustomTheme ? settings.themeData : AppThemeData.lightTheme,
+            darkTheme: isCustomTheme ? settings.themeData : AppThemeData.darkTheme,
+            themeMode: isCustomTheme ? ThemeMode.light : settings.themeMode,
             home: const SplashScreen(),
           );
         },

@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../providers/settings_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/logger.dart';
+import '../../utils/theme_config.dart';
 import '../../widgets/update/update_dialog.dart';
 import '../../widgets/player/player_styles.dart';
 import '../folder_picker/folder_picker_screen.dart';
@@ -67,28 +68,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionHeader(context, '外观'),
               Consumer<SettingsProvider>(
                 builder: (context, settings, child) {
-                  String themeText;
-                  IconData themeIcon;
+                  final themeConfig = settings.themeConfig;
                   
-                  switch (settings.theme) {
-                    case AppTheme.light:
-                      themeText = '浅色模式';
-                      themeIcon = Icons.light_mode;
-                      break;
-                    case AppTheme.dark:
-                      themeText = '深色模式';
-                      themeIcon = Icons.dark_mode;
-                      break;
-                    case AppTheme.system:
-                      themeText = '跟随系统';
-                      themeIcon = Icons.brightness_auto;
-                      break;
-                  }
-
                   return ListTile(
-                    leading: Icon(themeIcon, color: theme.colorScheme.primary),
+                    leading: Icon(themeConfig.icon, color: theme.colorScheme.primary),
                     title: const Text('主题'),
-                    subtitle: Text(themeText),
+                    subtitle: Text(themeConfig.name),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _showThemeDialog(context),
                   );
@@ -356,43 +341,150 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showThemeDialog(BuildContext context) {
     final settings = context.read<SettingsProvider>();
     
+    // 主题列表
+    final themes = [
+      (AppTheme.light, AppThemes.light),
+      (AppTheme.dark, AppThemes.dark),
+      (AppTheme.system, null), // 特殊处理
+      (AppTheme.sakuraPink, AppThemes.sakuraPink),
+      (AppTheme.oceanBlue, AppThemes.oceanBlue),
+      (AppTheme.forestGreen, AppThemes.forestGreen),
+      (AppTheme.violetPurple, AppThemes.violetPurple),
+      (AppTheme.sunsetOrange, AppThemes.sunsetOrange),
+      (AppTheme.mintTeal, AppThemes.mintTeal),
+      (AppTheme.darkRed, AppThemes.darkRed),
+      (AppTheme.goldLuxury, AppThemes.goldLuxury),
+      (AppTheme.skyBlue, AppThemes.skyBlue),
+      (AppTheme.neonPurple, AppThemes.neonPurple),
+    ];
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('选择主题'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Consumer<SettingsProvider>(
+            builder: (context, settings, child) {
+              return GridView.builder(
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.85,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: themes.length,
+                itemBuilder: (context, index) {
+                  final (theme, config) = themes[index];
+                  final isSelected = settings.theme == theme;
+                  
+                  // 跟随系统特殊处理
+                  if (theme == AppTheme.system) {
+                    return _buildThemeOption(
+                      context,
+                      theme: theme,
+                      name: '跟随系统',
+                      icon: Icons.brightness_auto,
+                      primaryColor: Colors.grey,
+                      backgroundColor: Colors.grey[200]!,
+                      isSelected: isSelected,
+                      onTap: () {
+                        settings.setTheme(theme);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }
+                  
+                  return _buildThemeOption(
+                    context,
+                    theme: theme,
+                    name: config!.name,
+                    icon: config.icon,
+                    primaryColor: config.primary,
+                    backgroundColor: config.background,
+                    isSelected: isSelected,
+                    onTap: () {
+                      settings.setTheme(theme);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context, {
+    required AppTheme theme,
+    required String name,
+    required IconData icon,
+    required Color primaryColor,
+    required Color backgroundColor,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.transparent,
+            width: 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            RadioListTile<AppTheme>(
-              title: const Text('浅色模式'),
-              secondary: const Icon(Icons.light_mode),
-              value: AppTheme.light,
-              groupValue: settings.theme,
-              onChanged: (value) {
-                settings.setTheme(value!);
-                Navigator.pop(context);
-              },
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-            RadioListTile<AppTheme>(
-              title: const Text('深色模式'),
-              secondary: const Icon(Icons.dark_mode),
-              value: AppTheme.dark,
-              groupValue: settings.theme,
-              onChanged: (value) {
-                settings.setTheme(value!);
-                Navigator.pop(context);
-              },
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            RadioListTile<AppTheme>(
-              title: const Text('跟随系统'),
-              secondary: const Icon(Icons.brightness_auto),
-              value: AppTheme.system,
-              groupValue: settings.theme,
-              onChanged: (value) {
-                settings.setTheme(value!);
-                Navigator.pop(context);
-              },
-            ),
+            if (isSelected)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
           ],
         ),
       ),
