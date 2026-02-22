@@ -29,15 +29,14 @@ class MelodyApp extends StatelessWidget {
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
-          // 使用自定义主题或默认主题
-          final isCustomTheme = settings.isCustomTheme;
+          final themeData = settings.themeData;
           
           return MaterialApp(
             title: '悦音',
             debugShowCheckedModeBanner: false,
-            theme: isCustomTheme ? settings.themeData : AppThemeData.lightTheme,
-            darkTheme: isCustomTheme ? settings.themeData : AppThemeData.darkTheme,
-            themeMode: isCustomTheme ? ThemeMode.light : settings.themeMode,
+            theme: themeData,
+            // 不设置 darkTheme，统一使用 theme
+            themeMode: ThemeMode.light,
             home: const SplashScreen(),
           );
         },

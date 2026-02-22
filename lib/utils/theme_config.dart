@@ -238,31 +238,44 @@ ThemeData createThemeData(ThemeConfig config) {
   final primaryColor = config.primary;
   final secondaryColor = config.secondary;
   
+  // 计算 onPrimary 颜色（根据 primary 的亮度）
+  final onPrimaryColor = _getContrastColor(primaryColor);
+  
+  // 确保文字颜色对比度足够
+  final textColor = isDark ? Colors.white : Colors.black;
+  final secondaryTextColor = isDark ? Colors.white70 : Colors.black87;
+  final tertiaryTextColor = isDark ? Colors.white60 : Colors.black54;
+  
   return ThemeData(
     useMaterial3: true,
     brightness: config.brightness,
     colorScheme: ColorScheme(
       brightness: config.brightness,
       primary: primaryColor,
-      onPrimary: isDark ? Colors.white : Colors.white,
+      onPrimary: onPrimaryColor,
       secondary: secondaryColor,
-      onSecondary: isDark ? Colors.black : Colors.white,
+      onSecondary: _getContrastColor(secondaryColor),
       surface: config.surface,
-      onSurface: config.onSurface,
+      onSurface: textColor,
       background: config.background,
-      onBackground: config.onBackground,
+      onBackground: textColor,
       error: const Color(0xFFFF6B6B),
       onError: Colors.white,
       tertiary: config.tertiary,
-      outline: config.onSurface.withOpacity(0.2),
+      outline: textColor.withOpacity(0.2),
     ),
     scaffoldBackgroundColor: config.background,
     appBarTheme: AppBarTheme(
       backgroundColor: config.surface,
-      foregroundColor: config.onSurface,
+      foregroundColor: textColor,
       elevation: 0,
       centerTitle: true,
       systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      titleTextStyle: TextStyle(
+        color: textColor,
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+      ),
     ),
     cardTheme: CardTheme(
       color: config.surface,
@@ -272,7 +285,7 @@ ThemeData createThemeData(ThemeConfig config) {
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: config.surface,
       selectedItemColor: primaryColor,
-      unselectedItemColor: config.onSurface.withOpacity(0.5),
+      unselectedItemColor: tertiaryTextColor,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
@@ -283,14 +296,59 @@ ThemeData createThemeData(ThemeConfig config) {
       trackHeight: 4,
       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
     ),
-    iconTheme: IconThemeData(color: config.onSurface.withOpacity(0.7)),
+    iconTheme: IconThemeData(color: secondaryTextColor),
     dividerTheme: DividerThemeData(
-      color: config.onSurface.withOpacity(0.1),
+      color: textColor.withOpacity(0.1),
       thickness: 1,
     ),
     listTileTheme: ListTileThemeData(
       iconColor: primaryColor,
-      textColor: config.onSurface,
+      textColor: textColor,
+      titleTextStyle: TextStyle(color: textColor, fontSize: 16),
+      subtitleTextStyle: TextStyle(color: tertiaryTextColor, fontSize: 14),
+    ),
+    textTheme: TextTheme(
+      displayLarge: TextStyle(color: textColor),
+      displayMedium: TextStyle(color: textColor),
+      displaySmall: TextStyle(color: textColor),
+      headlineLarge: TextStyle(color: textColor),
+      headlineMedium: TextStyle(color: textColor),
+      headlineSmall: TextStyle(color: textColor),
+      titleLarge: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.w500),
+      titleMedium: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500),
+      titleSmall: TextStyle(color: secondaryTextColor, fontSize: 14),
+      bodyLarge: TextStyle(color: textColor, fontSize: 16),
+      bodyMedium: TextStyle(color: textColor, fontSize: 14),
+      bodySmall: TextStyle(color: tertiaryTextColor, fontSize: 12),
+      labelLarge: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
+      labelMedium: TextStyle(color: secondaryTextColor, fontSize: 12),
+      labelSmall: TextStyle(color: tertiaryTextColor, fontSize: 11),
+    ),
+    tabBarTheme: TabBarTheme(
+      labelColor: primaryColor,
+      unselectedLabelColor: tertiaryTextColor,
+      indicatorColor: primaryColor,
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: config.surface,
+      titleTextStyle: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
+      contentTextStyle: TextStyle(color: secondaryTextColor, fontSize: 16),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: config.surface,
+      textStyle: TextStyle(color: textColor),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: isDark ? Colors.white : Colors.black87,
+      contentTextStyle: TextStyle(color: isDark ? Colors.black : Colors.white),
     ),
   );
+}
+
+/// 根据颜色亮度返回对比色（黑或白）
+Color _getContrastColor(Color color) {
+  // 计算颜色的亮度 (0-1)
+  final luminance = color.computeLuminance();
+  // 如果颜色较亮，返回黑色；否则返回白色
+  return luminance > 0.5 ? Colors.black : Colors.white;
 }
