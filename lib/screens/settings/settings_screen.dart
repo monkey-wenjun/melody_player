@@ -469,7 +469,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                // 根据卡片背景色亮度决定文字颜色，确保对比度
+                color: ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,

@@ -190,24 +190,27 @@ class UpdateService {
     await prefs.remove(_lastCheckKey);
   }
 
-  /// 下载APK到下载目录
+  /// 下载APK到应用外部文件目录（确保 FileProvider 可以访问）
   Future<String> downloadApk(String url, String fileName, 
       {Function(double)? onProgress}) async {
     try {
-      var status = await Permission.storage.request();
-      if (!status.isGranted) {
-        status = await Permission.manageExternalStorage.request();
+      // Android 11+ 不需要存储权限来写入应用私有目录
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.status;
         if (!status.isGranted) {
-          throw Exception('需要存储权限才能下载更新');
+          // 尝试请求，但不强制要求
+          status = await Permission.storage.request();
         }
       }
 
+      // 使用应用外部文件目录，确保 FileProvider 可以访问
       Directory downloadDir;
       if (Platform.isAndroid) {
-        downloadDir = Directory('/storage/emulated/0/Download');
+        final extDir = await getExternalStorageDirectory();
+        // 使用 Android/data/com.melody.melody_player/files/ 目录
+        downloadDir = Directory('${extDir?.path ?? '/storage/emulated/0/Android/data/com.melody.melody_player/files'}/updates');
         if (!await downloadDir.exists()) {
-          final extDir = await getExternalStorageDirectory();
-          downloadDir = extDir ?? await getApplicationDocumentsDirectory();
+          await downloadDir.create(recursive: true);
         }
       } else {
         downloadDir = await getApplicationDocumentsDirectory();
@@ -266,13 +269,20 @@ class UpdateService {
   /// 获取已下载的APK路径
   Future<String?> getExistingApkPath(String fileName) async {
     try {
-      final downloadDir = Directory('/storage/emulated/0/Download');
-      if (!await downloadDir.exists()) return null;
-      
-      final file = File('${downloadDir.path}/$fileName');
-      if (await file.exists()) {
-        return file.path;
+      // 检查新的下载路径 (Android/data/.../files/updates/)
+      final extDir = await getExternalStorageDirectory();
+      final newPath = '${extDir?.path}/updates/$fileName';
+      final newFile = File(newPath);
+      if (await newFile.exists()) {
+        return newFile.path;
       }
+      
+      // 兼容旧版本：检查旧下载路径 (Download/)
+      final oldFile = File('/storage/emulated/0/Download/$fileName');
+      if (await oldFile.exists()) {
+        return oldFile.path;
+      }
+      
       return null;
     } catch (e) {
       return null;

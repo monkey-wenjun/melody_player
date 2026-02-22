@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_filex/open_filex.dart';
 import '../../services/update_service.dart';
 
 import 'package:flutter/services.dart';
 import '../../app.dart';
 
-/// 安装 APK 文件
+// 与原生 Android 通信的 MethodChannel
+const MethodChannel _installChannel = MethodChannel('com.melody.melody_player/install');
+
+/// 安装 APK 文件 - 使用原生 Android Intent
 Future<void> installApkFile(String filePath, BuildContext? originalContext) async {
   debugPrint('准备安装 APK: $filePath');
   
@@ -20,27 +21,36 @@ Future<void> installApkFile(String filePath, BuildContext? originalContext) asyn
       return;
     }
     
-    debugPrint('APK 文件大小: ${await file.length()} bytes');
+    final fileSize = await file.length();
+    debugPrint('APK 文件大小: $fileSize bytes');
     
-    // 调用系统安装器
-    final result = await OpenFilex.open(
-      filePath,
-      type: 'application/vnd.android.package-archive',
-    );
-    
-    debugPrint('OpenFilex result: ${result.type}, message: ${result.message}');
-
-    // 注意：OpenFilex.open 在 Android 上返回 ResultType.done 并不表示安装成功
-    // 它只是表示成功调起了系统安装器
-    // 如果返回 error，可能是权限问题
-    if (result.type == ResultType.error) {
-      _showInstallResultSnackBar('无法打开安装器: ${result.message}');
+    if (fileSize == 0) {
+      _showInstallResultSnackBar('安装文件损坏，请重新下载');
+      return;
     }
-    // 不需要 else，因为安装界面已经调起，用户正在安装
+    
+    // 使用 MethodChannel 调用原生 Android 安装
+    debugPrint('调用原生安装方法...');
+    final result = await _installChannel.invokeMethod<Map>('installApk', {
+      'filePath': filePath,
+    });
+    
+    debugPrint('安装调用结果: $result');
+    
+    if (result != null && result['success'] == false) {
+      final error = result['error'] ?? '未知错误';
+      debugPrint('安装调用失败: $error');
+      _showInstallResultSnackBar('安装失败: $error');
+    } else {
+      debugPrint('安装界面已调起');
+    }
+  } on PlatformException catch (e) {
+    debugPrint('安装 APK 失败 (PlatformException): ${e.message}');
+    _showInstallResultSnackBar('安装失败: ${e.message}');
   } catch (e, stackTrace) {
     debugPrint('安装 APK 失败: $e');
     debugPrint('StackTrace: $stackTrace');
-    _showInstallResultSnackBar('安装提示：请在通知栏查看安装请求，或到文件管理器手动安装');
+    _showInstallResultSnackBar('安装失败，请手动安装: $e');
   }
 }
 
@@ -321,26 +331,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
   Future<void> _installApk() async {
     if (_downloadedFilePath == null) return;
-
-    try {
-      // 使用 open_filex 调起安装界面
-      final result = await OpenFilex.open(
-        _downloadedFilePath!,
-        type: 'application/vnd.android.package-archive',
-      );
-
-      if (result.type != ResultType.done) {
-        // 如果自动打开失败，显示手动安装提示
-        if (mounted) {
-          _showManualInstallDialog();
-        }
-      }
-    } catch (e) {
-      // 出错时显示手动安装提示
-      if (mounted) {
-        _showManualInstallDialog();
-      }
-    }
+    await installApkFile(_downloadedFilePath!, context);
   }
 
   void _showManualInstallDialog() {
