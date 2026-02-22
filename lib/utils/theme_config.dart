@@ -62,56 +62,56 @@ class AppThemes {
   /// 1. 樱花粉 - 浪漫粉色系
   static const ThemeConfig sakuraPink = ThemeConfig(
     name: '樱花粉',
-    primary: Color(0xFFF8BBD9),
-    secondary: Color(0xFFFCE4EC),
-    tertiary: Color(0xFFF48FB1),
+    primary: Color(0xFFE91E63),
+    secondary: Color(0xFFF48FB1),
+    tertiary: Color(0xFFF06292),
     brightness: Brightness.light,
-    background: Color(0xFFFDF2F8),
+    background: Color(0xFFFCE4EC),
     surface: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF880E4F),
-    onBackground: Color(0xFF880E4F),
+    onSurface: Color(0xFF212121),
+    onBackground: Color(0xFF212121),
     icon: Icons.favorite,
   );
 
   /// 2. 深海蓝 - 深邃海洋系
   static const ThemeConfig oceanBlue = ThemeConfig(
     name: '深海蓝',
-    primary: Color(0xFF0277BD),
+    primary: Color(0xFF29B6F6),
     secondary: Color(0xFF4FC3F7),
-    tertiary: Color(0xFF29B6F6),
+    tertiary: Color(0xFF81D4FA),
     brightness: Brightness.dark,
-    background: Color(0xFF0D1B2A),
-    surface: Color(0xFF1B263B),
-    onSurface: Color(0xFFE0F7FA),
-    onBackground: Color(0xFFE0F7FA),
+    background: Color(0xFF0A1929),
+    surface: Color(0xFF132F4C),
+    onSurface: Color(0xFFFFFFFF),
+    onBackground: Color(0xFFFFFFFF),
     icon: Icons.water,
   );
 
   /// 3. 森林绿 - 自然绿色系
   static const ThemeConfig forestGreen = ThemeConfig(
     name: '森林绿',
-    primary: Color(0xFF2E7D32),
+    primary: Color(0xFF388E3C),
     secondary: Color(0xFF81C784),
     tertiary: Color(0xFF66BB6A),
     brightness: Brightness.light,
     background: Color(0xFFF1F8E9),
     surface: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF1B5E20),
-    onBackground: Color(0xFF1B5E20),
+    onSurface: Color(0xFF212121),
+    onBackground: Color(0xFF212121),
     icon: Icons.forest,
   );
 
   /// 4. 紫罗兰 - 优雅紫色系
   static const ThemeConfig violetPurple = ThemeConfig(
     name: '紫罗兰',
-    primary: Color(0xFF7B1FA2),
+    primary: Color(0xFFCE93D8),
     secondary: Color(0xFFBA68C8),
     tertiary: Color(0xFFAB47BC),
     brightness: Brightness.dark,
     background: Color(0xFF1A0033),
     surface: Color(0xFF2D004D),
-    onSurface: Color(0xFFF3E5F5),
-    onBackground: Color(0xFFF3E5F5),
+    onSurface: Color(0xFFFFFFFF),
+    onBackground: Color(0xFFFFFFFF),
     icon: Icons.spa,
   );
 
@@ -124,8 +124,8 @@ class AppThemes {
     brightness: Brightness.light,
     background: Color(0xFFFFF3E0),
     surface: Color(0xFFFFFFFF),
-    onSurface: Color(0xFFE65100),
-    onBackground: Color(0xFFE65100),
+    onSurface: Color(0xFF212121),
+    onBackground: Color(0xFF212121),
     icon: Icons.wb_twilight,
   );
 
@@ -138,36 +138,36 @@ class AppThemes {
     brightness: Brightness.light,
     background: Color(0xFFE0F2F1),
     surface: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF004D40),
-    onBackground: Color(0xFF004D40),
+    onSurface: Color(0xFF212121),
+    onBackground: Color(0xFF212121),
     icon: Icons.eco,
   );
 
   /// 7. 暗黑红 - 酷炫暗红系
   static const ThemeConfig darkRed = ThemeConfig(
     name: '暗黑红',
-    primary: Color(0xFFD32F2F),
-    secondary: Color(0xFFEF5350),
-    tertiary: Color(0xFFE57373),
+    primary: Color(0xFFEF5350),
+    secondary: Color(0xFFE57373),
+    tertiary: Color(0xFFEF9A9A),
     brightness: Brightness.dark,
-    background: Color(0xFF1A1A2E),
-    surface: Color(0xFF16213E),
-    onSurface: Color(0xFFFFEBEE),
-    onBackground: Color(0xFFFFEBEE),
+    background: Color(0xFF1A0A0A),
+    surface: Color(0xFF2D1A1A),
+    onSurface: Color(0xFFFFFFFF),
+    onBackground: Color(0xFFFFFFFF),
     icon: Icons.local_fire_department,
   );
 
   /// 8. 金色奢华 - 高端金棕色系
   static const ThemeConfig goldLuxury = ThemeConfig(
     name: '金色奢华',
-    primary: Color(0xFFB8860B),
-    secondary: Color(0xFFD4AF37),
-    tertiary: Color(0xFFDAA520),
+    primary: Color(0xFFFFD700),
+    secondary: Color(0xFFFFE082),
+    tertiary: Color(0xFFFFECB3),
     brightness: Brightness.dark,
     background: Color(0xFF1C1C1C),
     surface: Color(0xFF2C2C2C),
-    onSurface: Color(0xFFFFF8E1),
-    onBackground: Color(0xFFFFF8E1),
+    onSurface: Color(0xFFFFFFFF),
+    onBackground: Color(0xFFFFFFFF),
     icon: Icons.diamond,
   );
 
@@ -180,8 +180,8 @@ class AppThemes {
     brightness: Brightness.light,
     background: Color(0xFFE1F5FE),
     surface: Color(0xFFFFFFFF),
-    onSurface: Color(0xFF01579B),
-    onBackground: Color(0xFF01579B),
+    onSurface: Color(0xFF212121),
+    onBackground: Color(0xFF212121),
     icon: Icons.cloud,
   );
 
@@ -194,8 +194,8 @@ class AppThemes {
     brightness: Brightness.dark,
     background: Color(0xFF0A0A0A),
     surface: Color(0xFF121212),
-    onSurface: Color(0xFFE0E0E0),
-    onBackground: Color(0xFFE0E0E0),
+    onSurface: Color(0xFFFFFFFF),
+    onBackground: Color(0xFFFFFFFF),
     icon: Icons.lightbulb_circle,
   );
 

@@ -196,7 +196,12 @@ class _UpdateDialogState extends State<UpdateDialog> {
             )
           else ...[
             ElevatedButton(
-              onPressed: _installApk,
+              onPressed: () {
+                Navigator.pop(context);
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  installApkFile(_downloadedFilePath!, context);
+                });
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
               ),
@@ -237,14 +242,16 @@ class _UpdateDialogState extends State<UpdateDialog> {
         },
       );
 
-      setState(() {
-        _isDownloading = false;
-        _downloadedFilePath = filePath;
-        _status = '下载完成: $filePath';
-      });
-
-      // 下载完成后自动安装
-      await _installApk();
+      // 下载完成后，先关闭对话框再安装
+      if (mounted) {
+        Navigator.pop(context);
+      }
+      
+      // 延迟一下确保对话框关闭后再调起安装
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // 直接调起安装
+      await installApkFile(filePath, context);
     } catch (e) {
       setState(() {
         _isDownloading = false;
@@ -259,6 +266,19 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
   /// 后台下载（对话框关闭后）
   Future<void> _startBackgroundDownload() async {
+    // 先关闭对话框
+    Navigator.pop(context);
+    
+    // 显示下载中的通知
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('正在后台下载更新...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    
     try {
       final updateService = UpdateService();
       
