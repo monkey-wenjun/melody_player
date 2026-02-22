@@ -7,21 +7,39 @@ import '../../services/update_service.dart';
 import 'package:flutter/services.dart';
 import '../../app.dart';
 
-/// 安装 APK 文件 - 使用全局 navigator 避免 context 失效问题
+/// 安装 APK 文件
 Future<void> installApkFile(String filePath, BuildContext? originalContext) async {
+  debugPrint('准备安装 APK: $filePath');
+  
   try {
+    // 检查文件是否存在
+    final file = File(filePath);
+    if (!await file.exists()) {
+      debugPrint('APK 文件不存在: $filePath');
+      _showInstallResultSnackBar('安装文件不存在，请重新下载');
+      return;
+    }
+    
+    debugPrint('APK 文件大小: ${await file.length()} bytes');
+    
     // 调用系统安装器
     final result = await OpenFilex.open(
       filePath,
       type: 'application/vnd.android.package-archive',
     );
+    
+    debugPrint('OpenFilex result: ${result.type}, message: ${result.message}');
 
-    // 如果安装器返回失败，显示手动安装提示
-    if (result.type != ResultType.done) {
-      _showInstallResultSnackBar('请允许安装权限，或在通知栏点击安装提示');
+    // 注意：OpenFilex.open 在 Android 上返回 ResultType.done 并不表示安装成功
+    // 它只是表示成功调起了系统安装器
+    // 如果返回 error，可能是权限问题
+    if (result.type == ResultType.error) {
+      _showInstallResultSnackBar('无法打开安装器: ${result.message}');
     }
-  } catch (e) {
-    // 出错时显示提示
+    // 不需要 else，因为安装界面已经调起，用户正在安装
+  } catch (e, stackTrace) {
+    debugPrint('安装 APK 失败: $e');
+    debugPrint('StackTrace: $stackTrace');
     _showInstallResultSnackBar('安装提示：请在通知栏查看安装请求，或到文件管理器手动安装');
   }
 }
@@ -212,6 +230,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
   }
 
   Future<void> _startDownload() async {
+    debugPrint('开始下载更新...');
     setState(() {
       _isDownloading = true;
       _status = '准备下载...';
@@ -233,7 +252,9 @@ class _UpdateDialogState extends State<UpdateDialog> {
           }
         },
       );
+      debugPrint('下载完成，文件路径: $filePath');
     } catch (e) {
+      debugPrint('下载失败: $e');
       if (mounted) {
         setState(() {
           _isDownloading = false;
@@ -249,12 +270,14 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
     // 下载成功，关闭对话框并安装
     if (mounted && filePath != null) {
+      debugPrint('关闭对话框并准备安装...');
       Navigator.pop(context);
       
       // 延迟确保对话框关闭
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 300));
       
-      // 直接调起安装（不依赖 context）
+      // 直接调起安装
+      debugPrint('调用 installApkFile...');
       await installApkFile(filePath, null);
     }
   }

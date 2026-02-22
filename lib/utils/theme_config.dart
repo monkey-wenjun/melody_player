@@ -238,10 +238,12 @@ ThemeData createThemeData(ThemeConfig config) {
   final primaryColor = config.primary;
   final secondaryColor = config.secondary;
   
-  // 强制使用高对比度文字颜色
-  final textColor = isDark ? Colors.white : Colors.black87;
-  final secondaryTextColor = isDark ? Colors.white70 : Colors.black54;
-  final tertiaryTextColor = isDark ? Colors.white60 : Colors.black45;
+  // 核心：根据主题亮度确定文字颜色
+  // 深色主题 -> 白色文字
+  // 浅色主题 -> 黑色文字
+  final textColor = isDark ? Colors.white : Colors.black;
+  final secondaryTextColor = isDark ? Colors.white70 : Colors.black87;
+  final tertiaryTextColor = isDark ? Colors.white54 : Colors.black54;
   
   // 计算 onPrimary 颜色（根据 primary 的亮度）
   final onPrimaryColor = _getContrastColor(primaryColor);
